@@ -2,6 +2,7 @@
 import { useState } from "react"
 import HomePage from "../components/HomePage"
 import ResultsPage from "../components/ResultsPage"
+import VerifiedModal from "../components/VerifiedModal"
 
 export default function Page() {
   const [page, setPage] = useState("home")
@@ -9,6 +10,7 @@ export default function Page() {
   const [searchValue, setSearchValue] = useState("")
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const handleSearch = async (q) => {
     setSearchQuery(q)
@@ -25,31 +27,33 @@ export default function Page() {
       const data = await res.json()
       setSearchResults(data)
     } catch {
-      setSearchResults({
-        interpretation: q,
-        matched: PROPERTIES.slice(0, 3).map(p => ({ id: p.id, reason: "", property: p })),
-        alsoLove: PROPERTIES.slice(3).map(p => ({ id: p.id, reason: "", property: p })),
-      })
+      setSearchResults(null)
     }
     setSearching(false)
   }
 
-  return page === "home" ? (
-    <HomePage
-      onSearch={handleSearch}
-      onSignUp={() => {}}
-      searchValue={searchValue}
-      setSearchValue={setSearchValue}
-    />
-  ) : (
-    <ResultsPage
-      query={searchQuery}
-      results={searchResults}
-      searching={searching}
-      onSearch={handleSearch}
-      onBack={() => { setPage("home"); setSearchResults(null) }}
-      searchValue={searchValue}
-      setSearchValue={setSearchValue}
-    />
+  return (
+    <>
+      {page === "home" ? (
+        <HomePage
+          onSearch={handleSearch}
+          onSignUp={() => setShowModal(true)}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+      ) : (
+        <ResultsPage
+          query={searchQuery}
+          results={searchResults}
+          searching={searching}
+          onSearch={handleSearch}
+          onBack={() => { setPage("home"); setSearchResults(null) }}
+          onSignUp={() => setShowModal(true)}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+      )}
+      {showModal && <VerifiedModal onClose={() => setShowModal(false)} />}
+    </>
   )
 }
