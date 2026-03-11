@@ -28,7 +28,18 @@ export default function VerifiedModal({ onClose }) {
     looking: "",
   })
 
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  const set = (key) => (e) => {
+    const value = e.target.value
+    setForm(f => ({ ...f, [key]: value }))
+    // Clear error as soon as field has valid input
+    setErrors(prev => {
+      const next = { ...prev }
+      if (key === "name" && value.trim()) delete next.name
+      if (key === "email" && value.includes("@") && value.includes(".")) delete next.email
+      if (key === "phone" && value.replace(/\D/g, "").length >= 7) delete next.phone
+      return next
+    })
+  }
 
   const validate = () => {
     const e = {}
