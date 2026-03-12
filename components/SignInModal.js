@@ -22,7 +22,7 @@ export default function SignInModal({ onClose }) {
       },
     })
     if (err) {
-      setError("Something went wrong. Please try again.")
+      setError(err.message || "Something went wrong. Please try again.")
     } else {
       setSent(true)
     }
