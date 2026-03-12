@@ -46,7 +46,7 @@ function GalleryStrip({ cards, visible }) {
   )
 }
 
-export default function HomePage({ onSearch, onSignUp, searchValue, setSearchValue }) {
+export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
   const [queryIndex, setQueryIndex] = useState(0)
   const [displayIndex, setDisplayIndex] = useState(0)
   const [textVisible, setTextVisible] = useState(true)
@@ -116,7 +116,7 @@ export default function HomePage({ onSearch, onSignUp, searchValue, setSearchVal
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onSignUp} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "9px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.03em" }}>Sign Up</button>
+          <button onClick={onSignIn} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "9px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.03em" }}>{user ? "My Portal" : "Sign In"}</button>
         </div>
       </nav>
 
@@ -128,7 +128,7 @@ export default function HomePage({ onSearch, onSignUp, searchValue, setSearchVal
         </h1>
         <div style={{ pointerEvents: "all", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "fadeUp 1s ease 0.6s both" }}>
           <button onClick={onSignUp} style={{ background: "rgba(255,255,255,0.9)", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "13px 32px", fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "0.04em" }}>Request Verified Access</button>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.2)", letterSpacing: "0.08em" }}>scroll to browse the collection ↓</div>
+
         </div>
       </div>
     </div>

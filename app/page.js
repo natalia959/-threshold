@@ -1,8 +1,10 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { supabase } from "../lib/supabase"
 import HomePage from "../components/HomePage"
 import ResultsPage from "../components/ResultsPage"
 import VerifiedModal from "../components/VerifiedModal"
+import SignInModal from "../components/SignInModal"
 
 export default function Page() {
   const [page, setPage] = useState("home")
@@ -10,14 +12,25 @@ export default function Page() {
   const [searchValue, setSearchValue] = useState("")
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
-  const [showModal, setShowModal] = useState(false)
+  const [showVerified, setShowVerified] = useState(false)
+  const [showSignIn, setShowSignIn] = useState(false)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleSearch = async (q) => {
     setSearchQuery(q)
     setPage("results")
     setSearching(true)
     setSearchResults(null)
-
     try {
       const res = await fetch("/api/search", {
         method: "POST",
@@ -32,12 +45,22 @@ export default function Page() {
     setSearching(false)
   }
 
+  const handleAuthClick = () => {
+    if (user) {
+      window.location.href = "/dashboard"
+    } else {
+      setShowSignIn(true)
+    }
+  }
+
   return (
     <>
       {page === "home" ? (
         <HomePage
           onSearch={handleSearch}
-          onSignUp={() => setShowModal(true)}
+          onSignUp={() => setShowVerified(true)}
+          onSignIn={handleAuthClick}
+          user={user}
           searchValue={searchValue}
           setSearchValue={setSearchValue}
         />
@@ -48,12 +71,15 @@ export default function Page() {
           searching={searching}
           onSearch={handleSearch}
           onBack={() => { setPage("home"); setSearchResults(null) }}
-          onSignUp={() => setShowModal(true)}
+          onSignUp={() => setShowVerified(true)}
+          onSignIn={handleAuthClick}
+          user={user}
           searchValue={searchValue}
           setSearchValue={setSearchValue}
         />
       )}
-      {showModal && <VerifiedModal onClose={() => setShowModal(false)} />}
+      {showVerified && <VerifiedModal onClose={() => setShowVerified(false)} />}
+      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
     </>
   )
 }
