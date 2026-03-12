@@ -79,7 +79,7 @@ export default function Page() {
         />
       )}
       {showVerified && <VerifiedModal onClose={() => setShowVerified(false)} />}
-      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
+      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} onApply={() => setShowVerified(true)} />}
     </>
   )
 }
