@@ -4,10 +4,12 @@ import { useState } from "react"
 export default function PropertyCard({ property, onClick, activeFilters }) {
   const [hovered, setHovered] = useState(false)
 
+  // Support both old (tags.idea) and new (idea_tags) data shapes
+  const ideaTags = property.idea_tags || property.tags?.idea || []
+  const landscapeTag = property.landscape_tag || property.tags?.landscape || ""
+
   const matchesFilter = activeFilters.length === 0 || activeFilters.every(f =>
-    property.tags.idea.includes(f) ||
-    property.tags.landscape === f ||
-    property.tags.provenance === f
+    ideaTags.includes(f) || landscapeTag === f
   )
 
   return (
@@ -27,18 +29,21 @@ export default function PropertyCard({ property, onClick, activeFilters }) {
           ? "0 16px 48px rgba(0,0,0,0.5)"
           : "0 4px 16px rgba(0,0,0,0.3)",
         opacity: !matchesFilter ? 0.2 : 1,
+        background: "#1a1a1a",
       }}
     >
-      <img
-        src={property.hero_photo || property.image || ""}
-        alt={property.name}
-        style={{
-          width: "100%", height: "100%",
-          objectFit: "cover",
-          filter: hovered ? "brightness(0.65)" : "brightness(0.75)",
-          transition: "filter 0.25s ease",
-        }}
-      />
+      {(property.hero_photo || property.image) && (
+        <img
+          src={property.hero_photo || property.image}
+          alt={property.name}
+          style={{
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            filter: hovered ? "brightness(0.65)" : "brightness(0.75)",
+            transition: "filter 0.25s ease",
+          }}
+        />
+      )}
       <div style={{
         position: "absolute", inset: 0,
         background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)",
