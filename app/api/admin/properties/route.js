@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../lib/supabase-admin'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'threshold2024'
 

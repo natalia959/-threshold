@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk"
-import { supabaseAdmin } from "../../../lib/supabase-admin"
+import { supabaseAdmin } from "@/lib/supabase-admin"
 
 const client = new Anthropic()
 
