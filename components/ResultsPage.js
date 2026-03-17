@@ -93,6 +93,9 @@ function PropertyCard({ item, size = "normal" }) {
     >
       {/* Image placeholder / actual image */}
       <div style={{ height, background: colors[property?.id] || "#1a1a20", position: "relative" }}>
+        {(property?.hero_photo || property?.image) && (
+          <img src={property.hero_photo || property.image} alt={property.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, rgba(255,255,255,0.04) 0%, transparent 50%)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 55%)" }} />
         {property && (
@@ -101,7 +104,7 @@ function PropertyCard({ item, size = "normal" }) {
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px" }}>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "#fff", fontWeight: 400, lineHeight: 1.2, marginBottom: 3 }}>{property.name}</div>
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{property.architect} · {property.year}</div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>${property.price.toLocaleString()}</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{property.price}</div>
             </div>
           </>
         )}
