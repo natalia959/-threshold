@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk"
-import { PROPERTIES } from "../properties"
+import { supabaseAdmin } from "@/lib/supabase-admin"
 
 const client = new Anthropic()
 
@@ -8,11 +8,23 @@ export async function POST(request) {
     const { query, propertyId } = await request.json()
     if (!query || !propertyId) return Response.json({ error: "Missing query or propertyId" }, { status: 400 })
 
-    const property = PROPERTIES.find(p => p.id === propertyId)
-    if (!property) return Response.json({ error: "Property not found" }, { status: 404 })
+    // Fetch the specific property
+    const { data: property, error } = await supabaseAdmin
+      .from("properties")
+      .select("*")
+      .eq("id", propertyId)
+      .single()
 
-    const otherProperties = PROPERTIES
-      .filter(p => p.id !== propertyId)
+    if (error || !property) return Response.json({ error: "Property not found" }, { status: 404 })
+
+    // Fetch other properties for context
+    const { data: others } = await supabaseAdmin
+      .from("properties")
+      .select("id, name, architect, year, location")
+      .eq("published", true)
+      .neq("id", propertyId)
+
+    const otherProperties = (others || [])
       .map(p => `- ${p.name} (${p.architect}, ${p.year}, ${p.location})`)
       .join("\n")
 
@@ -25,14 +37,15 @@ Property details:
 - Location: ${property.location}
 - Architect: ${property.architect}
 - Year: ${property.year}
-- Price: $${property.price.toLocaleString()}
-- Size: ${property.sqft} sq ft, ${property.beds} beds, ${property.baths} baths
+- Price: ${property.price}
+- Size: ${property.sqft ? `${property.sqft} sq ft` : "not listed"}, ${property.bedrooms ? `${property.bedrooms} beds` : ""}, ${property.bathrooms ? `${property.bathrooms} baths` : ""}
 - Significance: ${property.significance}
-- Architect context: ${property.architectContext}
-- Site context: ${property.siteContext}
+- Editorial: ${property.editorial}
+- Architect context: ${property.architect_context}
+- Site context: ${property.site_context}
 
 Other properties in the Threshold collection:
-${otherProperties}
+${otherProperties || "None listed yet"}
 
 Rules:
 - Answer in 2-4 sentences unless more depth is genuinely warranted
