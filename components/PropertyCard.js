@@ -30,7 +30,7 @@ export default function PropertyCard({ property, onClick, activeFilters }) {
       }}
     >
       <img
-        src={property.image}
+        src={property.hero_photo || property.image || ""}
         alt={property.name}
         style={{
           width: "100%", height: "100%",
