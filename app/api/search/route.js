@@ -8,12 +8,12 @@ export async function POST(request) {
     const { query } = await request.json()
     if (!query) return Response.json({ error: "Missing query" }, { status: 400 })
 
-    const { data: properties, error } = await supabaseAdmin
+    const { data: properties } = await supabaseAdmin
       .from("properties")
       .select("id, name, architect, year, location, price, significance, idea_tags, landscape_tag, hero_photo, photos, editorial")
       .eq("published", true)
 
-    if (error || !properties?.length) {
+    if (!properties?.length) {
       return Response.json({ interpretation: query, matched: [], alsoLove: [] })
     }
 
@@ -35,26 +35,56 @@ Rules:
 - matched: 1-3 items, alsoLove: 2-3 items
 - Only use ids from the collection above`
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: "user", content: query }],
+    // Use streaming
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullText = ""
+
+        const aiStream = await client.messages.stream({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: [{ role: "user", content: query }],
+        })
+
+        for await (const chunk of aiStream) {
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            fullText += chunk.delta.text
+            // Send incremental interpretation as it streams
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ partial: fullText })}\n\n`))
+          }
+        }
+
+        // Parse final JSON and hydrate with property data
+        try {
+          const clean = fullText.replace(/```json|```/g, "").trim()
+          const result = JSON.parse(clean)
+          const hydrate = (ids) => (ids || []).map(item => ({
+            ...item,
+            property: properties.find(p => p.id === item.id)
+          })).filter(item => item.property)
+
+          const final = {
+            interpretation: result.interpretation,
+            matched: hydrate(result.matched),
+            alsoLove: hydrate(result.alsoLove),
+          }
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ final })}\n\n`))
+        } catch {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Parse failed" })}\n\n`))
+        }
+
+        controller.close()
+      }
     })
 
-    const text = message.content.find(b => b.type === "text")?.text || ""
-    const clean = text.replace(/```json|```/g, "").trim()
-    const result = JSON.parse(clean)
-
-    const hydrate = (ids) => ids.map(item => ({
-      ...item,
-      property: properties.find(p => p.id === item.id)
-    })).filter(item => item.property)
-
-    return Response.json({
-      interpretation: result.interpretation,
-      matched: hydrate(result.matched),
-      alsoLove: hydrate(result.alsoLove),
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      }
     })
 
   } catch (error) {

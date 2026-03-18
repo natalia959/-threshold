@@ -140,7 +140,7 @@ function SkeletonCard({ size = "normal" }) {
   )
 }
 
-export default function ResultsPage({ query, results, searching, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
+export default function ResultsPage({ query, results, searching, streamingInterpretation, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
   const [selectedProperty, setSelectedProperty] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
 
@@ -163,6 +163,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         ::placeholder { color: rgba(255,255,255,0.25) !important; }
       `}</style>
 
@@ -205,9 +206,12 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
         <div style={{ marginBottom: 36 }}>
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", marginBottom: 10 }}>Results for</div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 12 }}>"{query}"</h1>
-          {results?.interpretation && (
+          {(streamingInterpretation || results?.interpretation) && (
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 18, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, maxWidth: 600 }}>
-              {results.interpretation}
+              {results?.interpretation || streamingInterpretation}
+              {streamingInterpretation && !results?.interpretation && (
+                <span style={{ display: "inline-block", width: 2, height: "1em", background: "rgba(255,255,255,0.3)", marginLeft: 2, verticalAlign: "text-bottom", animation: "blink 1s step-end infinite" }} />
+              )}
             </p>
           )}
         </div>
