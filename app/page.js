@@ -84,14 +84,8 @@ export default function Page() {
           if (!line.startsWith("data: ")) continue
           try {
             const data = JSON.parse(line.slice(6))
-            if (data.partial) {
-              // Try to extract interpretation as it streams
-              const match = data.partial.match(/"interpretation"\s*:\s*"([^"]*)"?/)
-              if (match) setStreamingInterpretation(match[1])
-            }
             if (data.final) {
               setSearchResults(data.final)
-              setStreamingInterpretation("")
             }
           } catch {}
         }
