@@ -140,20 +140,39 @@ function SkeletonCard({ size = "normal" }) {
   )
 }
 
-function AnimatedText({ text, speed = 14 }) {
+function AnimatedText({ text, speed = 22 }) {
   const [displayed, setDisplayed] = useState("")
+  const [stableText, setStableText] = useState("")
+
+  // Only accept text that ends with sentence-ending punctuation — guarantees completeness
   useEffect(() => {
     if (!text) return
+    const trimmed = text.trim()
+    if (trimmed.match(/[.!?]$/)) {
+      setStableText(trimmed)
+    }
+  }, [text])
+
+  useEffect(() => {
+    if (!stableText) return
     setDisplayed("")
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDisplayed(text.slice(0, i))
-      if (i >= text.length) clearInterval(interval)
+      setDisplayed(stableText.slice(0, i))
+      if (i >= stableText.length) clearInterval(interval)
     }, speed)
     return () => clearInterval(interval)
-  }, [text])
-  return <>{displayed}</>
+  }, [stableText])
+
+  return (
+    <span style={{ opacity: displayed ? 1 : 0, transition: "opacity 0.2s ease" }}>
+      {displayed}
+      {displayed && displayed.length < (stableText?.length || 0) && (
+        <span style={{ display: "inline-block", width: 1, height: "0.9em", background: "rgba(255,255,255,0.4)", marginLeft: 1, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
+      )}
+    </span>
+  )
 }
 
 export default function ResultsPage({ query, results, searching, streamingInterpretation, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
