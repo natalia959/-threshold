@@ -5,10 +5,9 @@ const client = new Anthropic()
 
 export async function POST(request) {
   try {
-    const { query, propertyId } = await request.json()
+    const { query, propertyId, history } = await request.json()
     if (!query || !propertyId) return Response.json({ error: "Missing query or propertyId" }, { status: 400 })
 
-    // Fetch the specific property
     const { data: property, error } = await supabaseAdmin
       .from("properties")
       .select("*")
@@ -17,7 +16,6 @@ export async function POST(request) {
 
     if (error || !property) return Response.json({ error: "Property not found" }, { status: 404 })
 
-    // Fetch other properties for context
     const { data: others } = await supabaseAdmin
       .from("properties")
       .select("id, name, architect, year, location")
@@ -28,41 +26,66 @@ export async function POST(request) {
       .map(p => `- ${p.name} (${p.architect}, ${p.year}, ${p.location})`)
       .join("\n")
 
-    const systemPrompt = `You are the Threshold Insight Bar. Threshold is a curated platform for architecturally significant homes. You speak with the authority of an architectural critic — knowledgeable, specific, never generic, never promotional.
+    const systemPrompt = `You are the voice of Threshold — a warm, knowledgeable guide for ${property.name}.
 
-You are on the page for ${property.name}.
+Your role is to help buyers fall in love with this house through conversation. You are like a trusted friend who happens to know everything about architecture.
 
-Property details:
+Property you're discussing:
 - Name: ${property.name}
+- Architect: ${property.architect}, ${property.year}
 - Location: ${property.location}
-- Architect: ${property.architect}
-- Year: ${property.year}
 - Price: ${property.price}
-- Size: ${property.sqft ? `${property.sqft} sq ft` : "not listed"}, ${property.bedrooms ? `${property.bedrooms} beds` : ""}, ${property.bathrooms ? `${property.bathrooms} baths` : ""}
-- Significance: ${property.significance}
-- Editorial: ${property.editorial}
-- Architect context: ${property.architect_context}
-- Site context: ${property.site_context}
+- Size: ${property.sqft ? `${property.sqft} sq ft` : ""}${property.bedrooms ? `, ${property.bedrooms} beds` : ""}${property.bathrooms ? `, ${property.bathrooms} baths` : ""}
+- Significance: ${property.significance || ""}
+- Editorial: ${property.editorial || ""}
+- Architect context: ${property.architect_context || ""}
+- Site context: ${property.site_context || ""}
+- Address: ${property.full_address || ""}
 
-Other properties in the Threshold collection:
-${otherProperties || "None listed yet"}
+Other properties in the collection:
+${otherProperties || "None yet"}
 
 Rules:
-- Answer in 2-4 sentences unless more depth is genuinely warranted
-- Never say "stunning", "gorgeous", "dream home", "nestled", "perfect"
-- If asked to find similar properties, recommend from the collection above with one sentence on why
-- Speak like Domus or the Architectural Review, not a real estate agent
-- If you don't know something, say so rather than inventing`
+- Keep responses to 2-3 sentences maximum — concise and warm
+- ALWAYS end with a natural follow-up question that invites the buyer deeper
+- Speak like a knowledgeable friend, not an academic or sales agent
+- Never use "stunning", "gorgeous", "nestled", "dream home", "perfect"
+- Make the buyer feel they're discovering something special
+- If asked about price or tours, mention they can request directly from this page
+- If asked about similar houses, reference the collection above warmly`
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: "user", content: query }],
+    // Build conversation history for context
+    const messages = []
+    if (history && history.length > 1) {
+      history.slice(1).forEach(m => {
+        messages.push({ role: m.role, content: m.content })
+      })
+    }
+    messages.push({ role: "user", content: query })
+
+    // Stream the response
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        const aiStream = await client.messages.stream({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 200,
+          system: systemPrompt,
+          messages,
+        })
+
+        for await (const chunk of aiStream) {
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            controller.enqueue(encoder.encode(chunk.delta.text))
+          }
+        }
+        controller.close()
+      }
     })
 
-    const text = message.content.find(b => b.type === "text")?.text || ""
-    return Response.json({ response: text })
+    return new Response(stream, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" }
+    })
 
   } catch (error) {
     console.error("Insight API error:", error)
