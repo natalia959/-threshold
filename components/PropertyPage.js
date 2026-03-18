@@ -65,21 +65,34 @@ function Chat({ property }) {
         }),
       })
 
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let fullText = ""
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        fullText += chunk
-        setMessages(m => m.map((msg, i) =>
-          i === assistantIndex ? { ...msg, content: fullText } : msg
-        ))
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+      if (!res.ok || !res.body) {
+        throw new Error("Bad response")
       }
-    } catch {
+
+      const contentType = res.headers.get("content-type") || ""
+      if (contentType.includes("application/json")) {
+        // Fallback: non-streaming response
+        const data = await res.json()
+        setMessages(m => m.map((msg, i) =>
+          i === assistantIndex ? { ...msg, content: data.response || data.error || "Unable to respond." } : msg
+        ))
+      } else {
+        // Streaming response
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let fullText = ""
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          fullText += decoder.decode(value, { stream: true })
+          setMessages(m => m.map((msg, i) =>
+            i === assistantIndex ? { ...msg, content: fullText } : msg
+          ))
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+        }
+      }
+    } catch (err) {
+      console.error("Chat error:", err)
       setMessages(m => m.map((msg, i) =>
         i === assistantIndex ? { ...msg, content: "Unable to respond right now." } : msg
       ))
