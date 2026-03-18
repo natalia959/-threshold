@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import ThresholdMark from "./ThresholdMark"
 import PropertyPage from "./PropertyPage"
 
@@ -140,9 +140,30 @@ function SkeletonCard({ size = "normal" }) {
   )
 }
 
+function AnimatedText({ text, speed = 18 }) {
+  const [displayed, setDisplayed] = useState("")
+  useEffect(() => {
+    if (!text) return
+    setDisplayed("")
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) clearInterval(interval)
+    }, speed)
+    return () => clearInterval(interval)
+  }, [text])
+  return <>{displayed}</>
+}
+
 export default function ResultsPage({ query, results, searching, streamingInterpretation, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
   const [selectedProperty, setSelectedProperty] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
+  const [prevResultsKey, setPrevResultsKey] = useState(null)
+  const resultsKey = results ? JSON.stringify(results.matched?.map(m => m.id)) : null
+  useEffect(() => {
+    if (resultsKey && resultsKey !== prevResultsKey) setPrevResultsKey(resultsKey)
+  }, [resultsKey])
 
   if (selectedProperty) {
     const allProperties = [
@@ -208,7 +229,9 @@ export default function ResultsPage({ query, results, searching, streamingInterp
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 12 }}>"{query}"</h1>
           {(streamingInterpretation || results?.interpretation) && (
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 18, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, maxWidth: 600 }}>
-              {results?.interpretation || streamingInterpretation}
+              {results?.interpretation 
+                ? <AnimatedText text={results.interpretation} speed={14} />
+                : streamingInterpretation}
               {streamingInterpretation && !results?.interpretation && (
                 <span style={{ display: "inline-block", width: 2, height: "1em", background: "rgba(255,255,255,0.3)", marginLeft: 2, verticalAlign: "text-bottom", animation: "blink 1s step-end infinite" }} />
               )}
@@ -243,7 +266,9 @@ export default function ResultsPage({ query, results, searching, streamingInterp
                 <SkeletonCard size="small" />
               </>
             ) : results?.matched?.map((item, i) => (
-              <PropertyCard key={item.id} item={item} size={matchedSizes[i] || "normal"} onSelect={setSelectedProperty} />
+              <div key={item.id} style={{ animation: `fadeUp 0.4s ease both`, animationDelay: `${i * 80}ms` }}>
+                <PropertyCard item={item} size={matchedSizes[i] || "normal"} onSelect={setSelectedProperty} />
+              </div>
             ))}
           </div>
         </div>
@@ -263,7 +288,9 @@ export default function ResultsPage({ query, results, searching, streamingInterp
                   <SkeletonCard size="small" />
                 </>
               ) : results?.alsoLove?.map((item, i) => (
-                <PropertyCard key={item.id} item={item} size={alsoSizes[i] || "normal"} onSelect={setSelectedProperty} />
+                <div key={item.id} style={{ animation: `fadeUp 0.4s ease both`, animationDelay: `${(i + 3) * 80}ms` }}>
+                  <PropertyCard item={item} size={alsoSizes[i] || "normal"} onSelect={setSelectedProperty} />
+                </div>
               ))}
             </div>
           </div>
