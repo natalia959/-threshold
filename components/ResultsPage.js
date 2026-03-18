@@ -140,13 +140,11 @@ function SkeletonCard({ size = "normal" }) {
   )
 }
 
-function AnimatedText({ text, speed = 22 }) {
+function AnimatedText({ text, speed = 20 }) {
   const [displayed, setDisplayed] = useState("")
-  const prevRef = useRef("")
 
   useEffect(() => {
-    if (!text || text === prevRef.current) return
-    prevRef.current = text
+    if (!text) { setDisplayed(""); return }
     setDisplayed("")
     let i = 0
     const interval = setInterval(() => {
@@ -161,7 +159,7 @@ function AnimatedText({ text, speed = 22 }) {
     <span>
       {displayed}
       {displayed && displayed.length < text?.length && (
-        <span style={{ display: "inline-block", width: 1, height: "0.9em", background: "rgba(255,255,255,0.4)", marginLeft: 1, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
+        <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.4)", marginLeft: 1, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
       )}
     </span>
   )
@@ -238,9 +236,9 @@ export default function ResultsPage({ query, results, searching, streamingInterp
         <div style={{ marginBottom: 36 }}>
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", marginBottom: 10 }}>Results for</div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 12 }}>"{query}"</h1>
-          {(streamingInterpretation || results?.interpretation) && (
+          {(results?.interpretation) && (
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 18, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, maxWidth: 600 }}>
-              <AnimatedText text={results?.interpretation || streamingInterpretation} speed={14} />
+              <AnimatedText text={results.interpretation} speed={20} />
             </p>
           )}
         </div>
