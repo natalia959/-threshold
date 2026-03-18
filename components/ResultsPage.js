@@ -142,33 +142,25 @@ function SkeletonCard({ size = "normal" }) {
 
 function AnimatedText({ text, speed = 22 }) {
   const [displayed, setDisplayed] = useState("")
-  const [stableText, setStableText] = useState("")
-
-  // Only accept text that ends with sentence-ending punctuation — guarantees completeness
-  useEffect(() => {
-    if (!text) return
-    const trimmed = text.trim()
-    if (trimmed.match(/[.!?]$/)) {
-      setStableText(trimmed)
-    }
-  }, [text])
+  const prevRef = useRef("")
 
   useEffect(() => {
-    if (!stableText) return
+    if (!text || text === prevRef.current) return
+    prevRef.current = text
     setDisplayed("")
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDisplayed(stableText.slice(0, i))
-      if (i >= stableText.length) clearInterval(interval)
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) clearInterval(interval)
     }, speed)
     return () => clearInterval(interval)
-  }, [stableText])
+  }, [text])
 
   return (
-    <span style={{ opacity: displayed ? 1 : 0, transition: "opacity 0.2s ease" }}>
+    <span>
       {displayed}
-      {displayed && displayed.length < (stableText?.length || 0) && (
+      {displayed && displayed.length < text?.length && (
         <span style={{ display: "inline-block", width: 1, height: "0.9em", background: "rgba(255,255,255,0.4)", marginLeft: 1, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
       )}
     </span>

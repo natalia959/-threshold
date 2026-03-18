@@ -8,6 +8,11 @@ import SignInModal from "../components/SignInModal"
 
 function quickMatch(properties, query) {
   const q = query.toLowerCase()
+    // Expand common search terms
+    .replace(/mid.?century/g, "koenig neutra")
+    .replace(/modernist|modern/g, "koenig neutra")
+    .replace(/glass/g, "glass steel")
+    .replace(/view|views/g, "hills los angeles")
   const terms = q.split(/\s+/)
   return properties
     .map(p => {
