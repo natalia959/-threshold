@@ -81,7 +81,7 @@ function PropertyCard({ item, size = "normal", onSelect }) {
 
   return (
     <div
-      onClick={() => property && (window.location.href = `/property/${property.id}`)}
+      onClick={() => property && onSelect && onSelect(property)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -168,11 +168,8 @@ function AnimatedText({ text, speed = 20 }) {
 export default function ResultsPage({ query, results, searching, streamingInterpretation, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
   const [selectedProperty, setSelectedProperty] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
-  const [prevResultsKey, setPrevResultsKey] = useState(null)
-  const resultsKey = results ? JSON.stringify(results.matched?.map(m => m.id)) : null
-  useEffect(() => {
-    if (resultsKey && resultsKey !== prevResultsKey) setPrevResultsKey(resultsKey)
-  }, [resultsKey])
+  const [focused, setFocused] = useState(false)
+  const toggleFilter = f => setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
 
   if (selectedProperty) {
     const allProperties = [
@@ -181,8 +178,6 @@ export default function ResultsPage({ query, results, searching, streamingInterp
     ].filter(Boolean)
     return <PropertyPage property={selectedProperty} allProperties={allProperties} onBack={() => setSelectedProperty(null)} />
   }
-  const [focused, setFocused] = useState(false)
-  const toggleFilter = f => setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
 
   const matchedSizes = ["large", "small", "small"]
   const alsoSizes = ["small", "large", "small"]
