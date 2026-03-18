@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import ThresholdMark from "./ThresholdMark"
+import PropertyPage from "./PropertyPage"
 
 const IDEA_FILTERS = ["Solitude","Gathering","Light as Material","Garden as Architecture","Indoors Dissolved","Work and Make"]
 const LANDSCAPE_FILTERS = ["Coastal","Desert","Urban","Mountain"]
@@ -65,7 +66,7 @@ function InsightBar({ property }) {
   )
 }
 
-function PropertyCard({ item, size = "normal" }) {
+function PropertyCard({ item, size = "normal", onSelect }) {
   const [hovered, setHovered] = useState(false)
   const property = item.property
   const height = size === "large" ? 480 : size === "small" ? 300 : 380
@@ -80,6 +81,7 @@ function PropertyCard({ item, size = "normal" }) {
 
   return (
     <div
+      onClick={() => property && (window.location.href = `/property/${property.id}`)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -138,8 +140,17 @@ function SkeletonCard({ size = "normal" }) {
   )
 }
 
-export default function ResultsPage({ query, results, searching, onSearch, onBack, searchValue, setSearchValue }) {
+export default function ResultsPage({ query, results, searching, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
+  const [selectedProperty, setSelectedProperty] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
+
+  if (selectedProperty) {
+    const allProperties = [
+      ...(results?.matched || []).map(m => m.property),
+      ...(results?.alsoLove || []).map(m => m.property),
+    ].filter(Boolean)
+    return <PropertyPage property={selectedProperty} allProperties={allProperties} onBack={() => setSelectedProperty(null)} />
+  }
   const [focused, setFocused] = useState(false)
   const toggleFilter = f => setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
 
@@ -228,7 +239,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
                 <SkeletonCard size="small" />
               </>
             ) : results?.matched?.map((item, i) => (
-              <PropertyCard key={item.id} item={item} size={matchedSizes[i] || "normal"} />
+              <PropertyCard key={item.id} item={item} size={matchedSizes[i] || "normal"} onSelect={setSelectedProperty} />
             ))}
           </div>
         </div>
@@ -248,7 +259,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
                   <SkeletonCard size="small" />
                 </>
               ) : results?.alsoLove?.map((item, i) => (
-                <PropertyCard key={item.id} item={item} size={alsoSizes[i] || "normal"} />
+                <PropertyCard key={item.id} item={item} size={alsoSizes[i] || "normal"} onSelect={setSelectedProperty} />
               ))}
             </div>
           </div>
