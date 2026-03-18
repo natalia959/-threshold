@@ -27,7 +27,6 @@ export default function Page() {
   const [searchValue, setSearchValue] = useState("")
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
-  const [streamingInterpretation, setStreamingInterpretation] = useState("")
   const [showVerified, setShowVerified] = useState(false)
   const [showSignIn, setShowSignIn] = useState(false)
   const [user, setUser] = useState(null)
@@ -51,9 +50,8 @@ export default function Page() {
     setSearchQuery(q)
     setPage("results")
     setSearching(true)
-    setStreamingInterpretation("")
 
-    // Instant keyword pre-match
+    // Show instant keyword results immediately (no interpretation yet)
     if (allProperties.length > 0) {
       const instant = quickMatch(allProperties, q)
       if (instant.length > 0) {
@@ -61,37 +59,17 @@ export default function Page() {
       }
     }
 
+    // Wait for full AI result then set it
     try {
       const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: q }),
       })
-
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ""
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split("\n\n")
-        buffer = lines.pop() || ""
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue
-          try {
-            const data = JSON.parse(line.slice(6))
-            if (data.final) {
-              setSearchResults(data.final)
-            }
-          } catch {}
-        }
-      }
+      const data = await res.json()
+      setSearchResults(data)
     } catch {
-      setSearchResults(prev => prev || null)
+      setSearchResults(prev => prev ? { ...prev, isInstant: false } : null)
     }
     setSearching(false)
   }
@@ -117,7 +95,6 @@ export default function Page() {
           query={searchQuery}
           results={searchResults}
           searching={searching}
-          streamingInterpretation={streamingInterpretation}
           onSearch={handleSearch}
           onBack={() => { setPage("home"); setSearchResults(null) }}
           onSignUp={() => setShowVerified(true)}
