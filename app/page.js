@@ -57,7 +57,7 @@ export default function Page() {
     if (allProperties.length > 0) {
       const instant = quickMatch(allProperties, q)
       if (instant.length > 0) {
-        setSearchResults({ interpretation: q, matched: instant, alsoLove: [], isInstant: true })
+        setSearchResults({ interpretation: `Searching for "${q}" across the collection.`, matched: instant, alsoLove: [], isInstant: true })
       }
     }
 
