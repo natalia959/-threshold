@@ -142,24 +142,17 @@ function SkeletonCard({ size = "normal" }) {
 
 function AnimatedText({ text, speed = 14 }) {
   const [displayed, setDisplayed] = useState("")
-  const [locked, setLocked] = useState(false)
-  const lockedText = useRef("")
-
   useEffect(() => {
-    if (!text || locked) return
-    // Lock to first non-empty text received
-    lockedText.current = text
-    setLocked(true)
+    if (!text) return
     setDisplayed("")
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDisplayed(lockedText.current.slice(0, i))
-      if (i >= lockedText.current.length) clearInterval(interval)
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) clearInterval(interval)
     }, speed)
     return () => clearInterval(interval)
   }, [text])
-
   return <>{displayed}</>
 }
 
