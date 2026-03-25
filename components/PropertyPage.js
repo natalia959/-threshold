@@ -1,47 +1,44 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
 
-function BottomChat({ property }) {
+function AskExperience({ property }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-  const [placeholderIdx, setPlaceholderIdx] = useState(0)
+  const [focused, setFocused] = useState(false)
+  const [promptIdx, setPromptIdx] = useState(0)
   const inputRef = useRef(null)
-  const messagesEndRef = useRef(null)
+  const bottomRef = useRef(null)
 
-  const suggestions = [
-    "What's the quietest room in the house?",
-    "How does light move through the day?",
-    "What makes this house significant?",
+  const prompts = [
+    "How does the light move through the home?",
+    "What makes this residence significant?",
+    "Is it designed for entertaining?",
+    "What materials define the space?",
     "What would mornings feel like here?",
-    "Who designed it and why does it matter?",
-    "How does it feel from the inside?",
+    "How do the indoor and outdoor spaces connect?",
   ]
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIdx(i => (i + 1) % suggestions.length)
-    }, 3500)
-    return () => clearInterval(interval)
+    const t = setInterval(() => setPromptIdx(i => (i + 1) % prompts.length), 3800)
+    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
-    if (expanded) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, expanded])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
-  const send = async (text) => {
-    const msg = (text || input).trim()
+  const send = async () => {
+    const msg = input.trim()
     if (!msg || loading) return
     setInput("")
-    setExpanded(true)
 
-    const userMessage = { role: "user", content: msg }
-    const history = [...messages, userMessage]
+    const userMsg = { role: "user", content: msg }
+    const history = [...messages, userMsg]
     setMessages(history)
     setLoading(true)
 
-    const assistantIndex = history.length
+    const aiIdx = history.length
     setMessages(m => [...m, { role: "assistant", content: "" }])
 
     try {
@@ -51,131 +48,165 @@ function BottomChat({ property }) {
         body: JSON.stringify({ query: msg, propertyId: property.id, history }),
       })
       if (!res.ok || !res.body) throw new Error()
-      const contentType = res.headers.get("content-type") || ""
-      if (contentType.includes("application/json")) {
+      const ct = res.headers.get("content-type") || ""
+      if (ct.includes("application/json")) {
         const data = await res.json()
-        setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: data.response || "Unable to respond." } : m))
+        setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: data.response || "" } : x))
       } else {
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
-        let fullText = ""
+        let full = ""
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          fullText += decoder.decode(value, { stream: true })
-          setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: fullText } : m))
+          full += decoder.decode(value, { stream: true })
+          setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: full } : x))
         }
       }
     } catch {
-      setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: "Unable to respond right now." } : m))
+      setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: "Unable to respond right now." } : x))
     }
     setLoading(false)
   }
 
   return (
-    <>
+    <div style={{
+      background: "#0f0f0f",
+      minHeight: "60vh",
+      padding: "120px 24px 200px",
+    }}>
       <style>{`
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes slideUp { from { opacity:0; transform:translateY(100%) } to { opacity:1; transform:translateY(0) } }
-        .chat-expand { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
-        .msg-in { animation: fadeInUp 0.4s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes promptFade { 0%{opacity:0;transform:translateY(4px)} 12%{opacity:1;transform:translateY(0)} 88%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-4px)} }
+        .msg-appear { animation: fadeIn 0.3s ease forwards; }
+        .input-glow:focus-within { box-shadow: 0 0 0 1px rgba(255,255,255,0.12); }
       `}</style>
 
-      <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-        display: "flex", flexDirection: "column", alignItems: "center",
-        padding: "0 40px 24px",
-        pointerEvents: "none",
-      }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
 
-        {/* White conversation panel — expands on first message */}
-        {expanded && messages.length > 0 && (
-          <div className="chat-expand" style={{
-            width: "100%", maxWidth: 640,
-            background: "#fff", color: "#0f0f0f",
-            borderRadius: "16px 16px 0 0",
-            padding: "28px 32px 0",
-            maxHeight: 340,
-            overflowY: "auto",
-            msOverflowStyle: "none", scrollbarWidth: "none",
-            pointerEvents: "all",
-            boxShadow: "0 -8px 40px rgba(0,0,0,0.15)",
-          }}>
-            <style>{`.chat-expand::-webkit-scrollbar{display:none}`}</style>
-            {/* Close */}
-            <button onClick={() => setExpanded(false)} style={{
-              position: "absolute", top: 16, right: 20,
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: 18, color: "#ccc", lineHeight: 1,
-            }}>×</button>
-
-            {messages.map((m, i) => (
-              <div key={i} className="msg-in" style={{ marginBottom: 24 }}>
-                {m.role === "user" ? (
-                  <div style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 12, color: "#999",
-                    marginBottom: 8, letterSpacing: "0.01em",
-                  }}>{m.content}</div>
-                ) : (
-                  <div style={{
-                    fontFamily: "var(--font-cormorant), serif",
-                    fontStyle: "italic", fontSize: 18,
-                    color: "#0f0f0f", lineHeight: 1.75,
-                  }}>
-                    {m.content}
-                    {loading && i === messages.length - 1 && !m.content && (
-                      <span style={{ display: "inline-block", width: 1.5, height: "0.8em", background: "#0f0f0f", marginLeft: 3, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-            <div ref={messagesEndRef} style={{ height: 8 }} />
+        {/* Rotating prompts — shown when no messages */}
+        {messages.length === 0 && (
+          <div style={{ marginBottom: 64, textAlign: "center" }}>
+            <div style={{
+              fontSize: 13, color: "#4a4a4a",
+              fontFamily: "'DM Sans', sans-serif",
+              marginBottom: 20, letterSpacing: "0.02em",
+            }}>
+              Ask anything about this home
+            </div>
+            <div key={promptIdx} style={{
+              fontSize: 15, color: "#6f6f6f",
+              fontFamily: "'DM Sans', sans-serif",
+              animation: "promptFade 3.8s ease infinite",
+              letterSpacing: "0.01em",
+            }}>
+              {prompts[promptIdx]}
+            </div>
           </div>
         )}
 
-        {/* Input bar */}
-        <div style={{
-          width: "100%", maxWidth: 640,
-          display: "flex", alignItems: "center", gap: 12,
-          background: expanded ? "#fff" : "transparent",
-          border: "none",
-          borderTop: expanded ? "1px solid #f0ede8" : "none",
-          borderRadius: expanded ? "0 0 16px 16px" : 50,
-          padding: "12px 14px 12px 22px",
-          transition: "all 0.3s ease",
-          pointerEvents: "all",
-          position: "relative",
-          boxShadow: expanded ? "0 8px 40px rgba(0,0,0,0.15)" : "none",
-        }}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && send()}
-            style={{
-              flex: 1, background: "none", border: "none", outline: "none",
-              fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 13, letterSpacing: "0.01em",
-              color: expanded ? "#0f0f0f" : "#fff",
-            }}
-          />
-          {!input && (
-            <div key={placeholderIdx} style={{
-              position: "absolute", left: 22, pointerEvents: "none",
-              fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 13, color: expanded ? "#bbb" : "rgba(255,255,255,0.35)",
-              animation: "fadeInUp 0.4s ease",
-            }}>
-              {suggestions[placeholderIdx]}
-            </div>
-          )}
+        {/* Messages */}
+        {messages.map((m, i) => (
+          <div key={i} className="msg-appear" style={{
+            marginBottom: i < messages.length - 1 ? 40 : 0,
+          }}>
+            {m.role === "user" ? (
+              // User question — small, muted
+              <div style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14,
+                color: "#5a5a5a",
+                lineHeight: 1.5,
+                fontWeight: 400,
+                marginBottom: 20,
+              }}>
+                {m.content}
+              </div>
+            ) : (
+              // AI response — editorial paragraphs
+              <div>
+                {m.content ? (
+                  m.content.split(/\n\n+/).filter(Boolean).map((para, pi, arr) => {
+                    // Detect follow-up suggestion (starts with → or "I can" or "Would you")
+                    const isFollowUp = para.startsWith("→") || para.startsWith("I can") || para.startsWith("Would you") || para.startsWith("Happy to") || para.startsWith("If you")
+                    return (
+                      <p key={pi} style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: isFollowUp ? 14 : 18,
+                        lineHeight: isFollowUp ? 1.6 : 1.8,
+                        color: isFollowUp ? "#6f6f6f" : "#eae7e1",
+                        fontWeight: 400,
+                        marginBottom: pi < arr.length - 1 ? (isFollowUp ? 0 : 18) : 0,
+                        fontStyle: "normal",
+                        letterSpacing: isFollowUp ? "0" : "-0.01em",
+                      }}>
+                        {isFollowUp && !para.startsWith("→") ? `→ ${para}` : para}
+                      </p>
+                    )
+                  })
+                ) : (
+                  // Loading state — just a subtle cursor, no dots
+                  <div style={{
+                    width: 2, height: 18,
+                    background: "#3a3a3a",
+                    borderRadius: 1,
+                    animation: "fadeIn 0.3s ease infinite alternate",
+                  }} />
+                )}
+              </div>
+            )}
+          </div>
+        ))}
 
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Fixed bottom input */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        zIndex: 50, padding: "20px 24px 32px",
+        background: "linear-gradient(to top, #0f0f0f 60%, transparent)",
+      }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <div className="input-glow" style={{
+            background: "#1a1a1a",
+            borderRadius: 14,
+            padding: "0 20px",
+            height: 52,
+            display: "flex", alignItems: "center",
+            transition: "box-shadow 0.2s ease",
+            position: "relative",
+          }}>
+            {/* Placeholder */}
+            {!input && !focused && (
+              <div style={{
+                position: "absolute", left: 20,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14, color: "#3a3a3a",
+                pointerEvents: "none",
+                letterSpacing: "0.01em",
+              }}>
+                Ask anything about this home…
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={e => e.key === "Enter" && send()}
+              style={{
+                flex: 1, background: "none", border: "none", outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14, color: "#eae7e1",
+                letterSpacing: "0.01em",
+              }}
+            />
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -183,7 +214,7 @@ export default function PropertyPage({ property, allProperties, onBack }) {
   const photos = property.photos?.length ? property.photos : property.hero_photo ? [property.hero_photo] : []
 
   return (
-    <div style={{ background: "#0c0c0c", color: "#fff", minHeight: "100vh" }}>
+    <div style={{ background: "#0f0f0f", color: "#eae7e1", minHeight: "100vh" }}>
       <style>{`
         * { box-sizing: border-box; }
         .no-bar::-webkit-scrollbar { display: none; }
@@ -192,101 +223,141 @@ export default function PropertyPage({ property, allProperties, onBack }) {
 
       {/* Minimal nav */}
       <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "20px 40px",
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)",
+        padding: "22px 40px",
+        background: "linear-gradient(to bottom, rgba(15,15,15,0.9) 0%, transparent 100%)",
       }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.22em", color: "rgba(255,255,255,0.7)" }}>
-          THRESHOLD
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontFamily: "'DM Sans', sans-serif", fontSize: 11,
+          letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)",
+          textTransform: "uppercase",
+        }}>
+          Threshold
         </button>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontFamily: "'DM Sans', sans-serif", fontSize: 11,
+          color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em",
+        }}>
           ← Collection
         </button>
       </nav>
 
-      {/* Full screen photo stack */}
-      <div className="no-bar" style={{ overflowY: "auto", scrollBehavior: "smooth" }}>
+      {/* Hero — full viewport */}
+      <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+        {photos[0] ? (
+          <img src={photos[0]} alt={property.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        ) : (
+          <div style={{ width: "100%", height: "100%", background: "#1a1a1a" }} />
+        )}
+        {/* Gradient */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, transparent 35%, rgba(15,15,15,0.5) 70%, #0f0f0f 100%)"
+        }} />
 
-        {/* Hero — full viewport */}
-        <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-          {photos[0] ? (
-            <img src={photos[0]} alt={property.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          ) : (
-            <div style={{ width: "100%", height: "100%", background: "#1a1a1a" }} />
-          )}
-          {/* Dark gradient at bottom for readability */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
-
-          {/* Property title over hero */}
-          <div style={{ position: "absolute", bottom: 120, left: 40, right: 400 }}>
-            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", marginBottom: 10 }}>
+        {/* Property info over hero */}
+        <div style={{ position: "absolute", bottom: 64, left: 0, right: 0, padding: "0 40px" }}>
+          <div style={{ maxWidth: 640, margin: "0 auto" }}>
+            <div style={{
+              fontFamily: "'DM Sans', sans-serif", fontSize: 10,
+              letterSpacing: "0.2em", color: "rgba(255,255,255,0.4)",
+              textTransform: "uppercase", marginBottom: 12,
+            }}>
               {property.location}
             </div>
-            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 8 }}>
+            <div style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(28px, 4vw, 52px)",
+              fontWeight: 300, lineHeight: 1.05, marginBottom: 10,
+            }}>
               {property.name}
             </div>
-            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
-              {property.architect}{property.year ? ` · ${property.year}` : ""}
-            </div>
-          </div>
-
-          {/* Price + actions top right */}
-          <div style={{ position: "absolute", bottom: 120, right: 40, textAlign: "right" }}>
-            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 36, fontWeight: 300, marginBottom: 16 }}>
-              {property.price}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <button style={{ padding: "10px 24px", background: "#fff", color: "#0f0f0f", border: "none", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>
-                Request a Tour
-              </button>
-              <button style={{ padding: "10px 24px", background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>
-                Save Estate
-              </button>
+            <div style={{
+              fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+              color: "rgba(255,255,255,0.4)", display: "flex",
+              justifyContent: "space-between", alignItems: "flex-end",
+            }}>
+              <span>{property.architect}{property.year ? ` · ${property.year}` : ""}</span>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button style={{
+                  padding: "9px 20px", background: "#fff", color: "#0f0f0f",
+                  border: "none", borderRadius: 40,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 11,
+                  letterSpacing: "0.05em", cursor: "pointer",
+                }}>Request a Tour</button>
+                <button style={{
+                  padding: "9px 20px", background: "transparent",
+                  color: "rgba(255,255,255,0.6)",
+                  border: "1px solid rgba(255,255,255,0.2)", borderRadius: 40,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 11,
+                  letterSpacing: "0.05em", cursor: "pointer",
+                }}>Save</button>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Remaining photos full width */}
-        {photos.slice(1).map((url, i) => (
-          <div key={i} style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden" }}>
-            <img src={url} alt={`${property.name} ${i + 2}`}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          </div>
-        ))}
-
-        {/* Editorial text — clean, centered, generous padding */}
-        {(property.editorial || property.architect_context || property.site_context) && (
-          <div style={{ background: "#fff", color: "#0f0f0f", padding: "100px 0" }}>
-            <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 40px" }}>
-              {property.editorial && (
-                <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 22, lineHeight: 1.9, color: "#222", marginBottom: 60 }}>
-                  {property.editorial}
-                </div>
-              )}
-              {property.architect_context && (
-                <div style={{ marginBottom: 48 }}>
-                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "#bbb", textTransform: "uppercase", marginBottom: 16 }}>Architect</div>
-                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#777", lineHeight: 1.9 }}>{property.architect_context}</div>
-                </div>
-              )}
-              {property.site_context && (
-                <div>
-                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "#bbb", textTransform: "uppercase", marginBottom: 16 }}>Site</div>
-                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#777", lineHeight: 1.9 }}>{property.site_context}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Bottom padding for chat bar */}
-        <div style={{ height: 120, background: "#0c0c0c" }} />
       </div>
 
-      {/* Floating chat */}
-      <BottomChat property={property} />
+      {/* Remaining photos */}
+      {photos.slice(1).map((url, i) => (
+        <div key={i} style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden" }}>
+          <img src={url} alt={`${property.name} ${i + 2}`}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
+      ))}
+
+      {/* Editorial text */}
+      {(property.editorial || property.architect_context || property.site_context) && (
+        <div style={{ padding: "100px 24px 80px" }}>
+          <div style={{ maxWidth: 640, margin: "0 auto" }}>
+            {property.editorial && (
+              <div style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 22, lineHeight: 1.85, color: "#b8b5ae",
+                marginBottom: 56, fontWeight: 300,
+              }}>
+                {property.editorial}
+              </div>
+            )}
+            {property.architect_context && (
+              <div style={{ marginBottom: 40 }}>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
+                  letterSpacing: "0.18em", color: "#3a3a3a",
+                  textTransform: "uppercase", marginBottom: 16,
+                }}>Architect</div>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                  color: "#5a5a5a", lineHeight: 1.9,
+                }}>{property.architect_context}</div>
+              </div>
+            )}
+            {property.site_context && (
+              <div>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
+                  letterSpacing: "0.18em", color: "#3a3a3a",
+                  textTransform: "uppercase", marginBottom: 16,
+                }}>Site</div>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                  color: "#5a5a5a", lineHeight: 1.9,
+                }}>{property.site_context}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Divider */}
+      <div style={{ height: 1, background: "#1a1a1a", maxWidth: 640, margin: "0 auto" }} />
+
+      {/* Ask experience */}
+      <AskExperience property={property} />
     </div>
   )
 }
