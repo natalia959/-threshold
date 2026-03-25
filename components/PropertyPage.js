@@ -1,192 +1,51 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
 
-// Property-specific prompts that feel alive and intelligent
-const PROMPTS = [
-  "What's the flooring material in the main living space?",
-  "How does the light change through the day here?",
-  "Has this house been altered from the original design?",
-  "What would mornings feel like in the kitchen?",
-  "What's the relationship between inside and outside?",
-  "Who were the original owners and how did they live here?",
-  "What makes this architect's work different from their peers?",
-  "Is the structure exposed anywhere in the interior?",
-  "What's the quietest room in the house?",
-  "How does this house handle the landscape around it?",
-  "What materials would you feel underfoot throughout the day?",
-  "What does the view look like at dusk?",
-  "How private is this from the street?",
-  "What's the best season to experience this house?",
-  "Could you work from home here comfortably?",
-]
-
-function FloatingPromptBar({ onPromptClick }) {
-  const [current, setCurrent] = useState(0)
-  const [visible, setVisible] = useState(true)
+function BottomChat({ property }) {
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
-  const [focused, setFocused] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [placeholder, setPlaceholder] = useState("")
   const inputRef = useRef(null)
 
+  const suggestions = [
+    "What's the quietest room in the house?",
+    "How does light move through the day?",
+    "What makes this house architecturally significant?",
+    "What would mornings feel like here?",
+    "Who designed it and why does it matter?",
+    "How does it feel from the inside?",
+  ]
+
+  // Rotate placeholder suggestions
   useEffect(() => {
-    if (focused) return
+    let i = 0
+    setPlaceholder(suggestions[0])
     const interval = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => {
-        setCurrent(c => (c + 1) % PROMPTS.length)
-        setVisible(true)
-      }, 400)
+      i = (i + 1) % suggestions.length
+      setPlaceholder(suggestions[i])
     }, 3500)
     return () => clearInterval(interval)
-  }, [focused])
-
-  const handleSubmit = () => {
-    const text = input.trim()
-    if (!text) {
-      onPromptClick(PROMPTS[current])
-    } else {
-      onPromptClick(text)
-      setInput("")
-    }
-    inputRef.current?.blur()
-    setFocused(false)
-  }
-
-  return (
-    <div style={{
-      position: "fixed",
-      bottom: 32,
-      left: "50%",
-      transform: "translateX(-50%)",
-      zIndex: 100,
-      width: "min(560px, calc(100vw - 48px))",
-    }}>
-      <style>{`
-        @keyframes promptFadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .prompt-bar { transition: all 0.3s ease; }
-        .prompt-bar:focus-within { opacity: 1 !important; }
-      `}</style>
-      <div
-        className="prompt-bar"
-        style={{
-          background: "rgba(15,15,14,0.55)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderRadius: 50,
-          border: "1px solid rgba(255,255,255,0.1)",
-          padding: focused ? "12px 16px 12px 22px" : "14px 16px 14px 24px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          opacity: focused ? 1 : 0.5,
-          transition: "opacity 0.3s ease, padding 0.2s ease, background 0.3s ease",
-          cursor: focused ? "text" : "pointer",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-        }}
-        onClick={() => { if (!focused) { setFocused(true); inputRef.current?.focus() } }}
-      >
-        {/* Sparkle */}
-        <div style={{
-          width: 18, height: 18, flexShrink: 0, opacity: 0.6,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0Z" fill="rgba(201,169,110,0.8)"/>
-          </svg>
-        </div>
-
-        {/* Input / animated placeholder */}
-        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => { if (!input) setFocused(false) }}
-            onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            style={{
-              background: "none", border: "none", outline: "none",
-              width: "100%", fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 13, color: "#fff", letterSpacing: "0.01em",
-              caretColor: "#c9a96e",
-            }}
-          />
-          {!focused && !input && (
-            <div
-              style={{
-                position: "absolute", top: 0, left: 0, right: 0,
-                fontFamily: "var(--font-dm-sans), sans-serif",
-                fontSize: 13, color: "rgba(255,255,255,0.65)",
-                letterSpacing: "0.01em", pointerEvents: "none",
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(0)" : "translateY(4px)",
-                transition: "opacity 0.4s ease, transform 0.4s ease",
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              }}
-            >
-              {PROMPTS[current]}
-            </div>
-          )}
-        </div>
-
-        {/* Send button */}
-        <button
-          onClick={e => { e.stopPropagation(); handleSubmit() }}
-          style={{
-            background: input.trim() ? "#c9a96e" : "rgba(255,255,255,0.1)",
-            border: "none", borderRadius: 50,
-            width: 32, height: 32, flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", transition: "background 0.2s ease",
-          }}
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 6H11M6 1L11 6L6 11" stroke={input.trim() ? "#0f0f0f" : "rgba(255,255,255,0.5)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function Chat({ property, initialMessage, chatRef }) {
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: `You're looking at ${property.name}${property.architect ? ` by ${property.architect}` : ""}${property.year ? `, ${property.year}` : ""}. What would you like to know about it?` }
-  ])
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef(null)
-
-  // Expose send function via ref
-  useEffect(() => {
-    if (chatRef) chatRef.current = { send }
-  })
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  // Handle messages sent from floating bar
-  useEffect(() => {
-    if (initialMessage) send(initialMessage)
-  }, [initialMessage])
+  }, [])
 
   const send = async (text) => {
-    const msg = text.trim()
+    const msg = (text || input).trim()
     if (!msg || loading) return
+    setInput("")
 
-    const updatedMessages = [...messages, { role: "user", content: msg }]
-    setMessages(updatedMessages)
+    const userMessage = { role: "user", content: msg }
+    const history = [...messages, userMessage]
+    setMessages(history)
     setLoading(true)
-    const assistantIndex = updatedMessages.length
+
+    const assistantIndex = history.length
     setMessages(m => [...m, { role: "assistant", content: "" }])
 
     try {
       const res = await fetch("/api/insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: msg, propertyId: property.id, history: updatedMessages }),
+        body: JSON.stringify({ query: msg, propertyId: property.id, history }),
       })
 
       if (!res.ok || !res.body) throw new Error()
@@ -194,7 +53,7 @@ function Chat({ property, initialMessage, chatRef }) {
 
       if (contentType.includes("application/json")) {
         const data = await res.json()
-        setMessages(m => m.map((msg, i) => i === assistantIndex ? { ...msg, content: data.response || "Unable to respond." } : msg))
+        setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: data.response || "Unable to respond." } : m))
       } else {
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
@@ -203,162 +62,235 @@ function Chat({ property, initialMessage, chatRef }) {
           const { done, value } = await reader.read()
           if (done) break
           fullText += decoder.decode(value, { stream: true })
-          setMessages(m => m.map((msg, i) => i === assistantIndex ? { ...msg, content: fullText } : msg))
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+          setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: fullText } : m))
         }
       }
     } catch {
-      setMessages(m => m.map((msg, i) => i === assistantIndex ? { ...msg, content: "Unable to respond right now." } : msg))
+      setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: "Unable to respond right now." } : m))
     }
     setLoading(false)
   }
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, padding: "24px 32px 20px" }}>
-      <style>{`
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .chat-scroll::-webkit-scrollbar { display: none; }
-      `}</style>
-      <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.15em", color: "#bbb", textTransform: "uppercase", marginBottom: 16 }}>
-        Conversation
-      </div>
+  // Last assistant message to show above input
+  const lastExchange = messages.length > 0 ? {
+    question: messages.filter(m => m.role === "user").slice(-1)[0]?.content,
+    answer: messages.filter(m => m.role === "assistant").slice(-1)[0]?.content,
+  } : null
 
-      {/* Messages */}
-      <div className="chat-scroll" style={{ flex: 1, overflowY: "auto", minHeight: 0, msOverflowStyle: "none", scrollbarWidth: "none" }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ marginBottom: 18 }}>
-            {m.role === "assistant" ? (
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, color: "#555", lineHeight: 1.85 }}>
-                {m.content}
-                {loading && i === messages.length - 1 && (
-                  <span style={{ display: "inline-block", width: 1.5, height: "0.85em", background: "#c9a96e", marginLeft: 2, verticalAlign: "text-bottom", animation: "blink 0.7s step-end infinite" }} />
-                )}
-              </div>
-            ) : (
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, color: "#999", fontStyle: "italic", marginBottom: 2 }}>
-                {m.content}
-              </div>
-            )}
+  return (
+    <>
+      <style>{`
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes placeholderFade { 0%{opacity:0;transform:translateY(4px)} 15%{opacity:1;transform:translateY(0)} 85%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-4px)} }
+      `}</style>
+
+      {/* Answer floats above the bar */}
+      {lastExchange && (
+        <div style={{
+          position: "fixed", bottom: 80, left: 0, right: 0, zIndex: 40,
+          display: "flex", justifyContent: "center",
+          padding: "0 40px", pointerEvents: "none",
+        }}>
+          <div style={{
+            maxWidth: 680, width: "100%",
+            animation: "fadeInUp 0.5s ease",
+          }}>
+            {/* Question */}
+            <div style={{
+              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontSize: 12, color: "rgba(255,255,255,0.45)",
+              marginBottom: 10, letterSpacing: "0.02em",
+            }}>
+              {lastExchange.question}
+            </div>
+            {/* Answer */}
+            <div style={{
+              fontFamily: "var(--font-cormorant), serif",
+              fontStyle: "italic", fontSize: 22,
+              color: "rgba(255,255,255,0.92)",
+              lineHeight: 1.65,
+              textShadow: "0 2px 20px rgba(0,0,0,0.4)",
+            }}>
+              {lastExchange.answer}
+              {loading && !lastExchange.answer && (
+                <span style={{ display: "inline-block", width: 1.5, height: "0.8em", background: "rgba(255,255,255,0.6)", marginLeft: 3, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
+              )}
+            </div>
           </div>
-        ))}
-        <div ref={bottomRef} />
+        </div>
+      )}
+
+      {/* Fixed bottom input bar */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
+        padding: "16px 40px 20px",
+        background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}>
+        <div style={{
+          maxWidth: 680, margin: "0 auto",
+          display: "flex", alignItems: "center", gap: 12,
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          borderRadius: 50, padding: "12px 16px 12px 24px",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && send()}
+            style={{
+              flex: 1, background: "none", border: "none", outline: "none",
+              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontSize: 14, color: "#fff",
+              letterSpacing: "0.01em",
+            }}
+          />
+          {/* Animated placeholder when empty */}
+          {!input && (
+            <div style={{
+              position: "absolute", left: 24, pointerEvents: "none",
+              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontSize: 14, color: "rgba(255,255,255,0.3)",
+              animation: "placeholderFade 3.5s ease infinite",
+              key: placeholder,
+            }}>
+              {placeholder}
+            </div>
+          )}
+          <button
+            onClick={() => send()}
+            disabled={loading || !input.trim()}
+            style={{
+              width: 32, height: 32, borderRadius: "50%",
+              background: input.trim() ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.1)",
+              border: "none", cursor: input.trim() ? "pointer" : "default",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s", flexShrink: 0,
+              color: input.trim() ? "#0f0f0f" : "rgba(255,255,255,0.3)",
+              fontSize: 14,
+            }}
+          >
+            →
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
 export default function PropertyPage({ property, allProperties, onBack }) {
   const photos = property.photos?.length ? property.photos : property.hero_photo ? [property.hero_photo] : []
-  const [pendingMessage, setPendingMessage] = useState(null)
-  const chatRef = useRef(null)
-
-  const handlePrompt = (text) => {
-    // Scroll to chat panel and send
-    document.getElementById("chat-panel")?.scrollIntoView({ behavior: "smooth" })
-    if (chatRef.current) {
-      chatRef.current.send(text)
-    } else {
-      setPendingMessage(text)
-    }
-  }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fff", color: "#0f0f0f" }}>
-      <style>{`* { box-sizing: border-box; } .no-scroll::-webkit-scrollbar { display: none; } .no-scroll { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+    <div style={{ background: "#0c0c0c", color: "#fff", minHeight: "100vh" }}>
+      <style>{`
+        * { box-sizing: border-box; }
+        .no-bar::-webkit-scrollbar { display: none; }
+        .no-bar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Nav */}
-      <nav style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "20px 40px", borderBottom: "1px solid #f0ede8", position: "sticky", top: 0, background: "#fff", zIndex: 20 }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, letterSpacing: "0.2em", color: "#0f0f0f", textAlign: "left" }}>
+      {/* Minimal nav */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "20px 40px",
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)",
+      }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.22em", color: "rgba(255,255,255,0.7)" }}>
           THRESHOLD
         </button>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, color: "#999", textAlign: "right" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>
           ← Collection
         </button>
       </nav>
 
-      {/* Two column layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", height: "calc(100vh - 61px)" }}>
+      {/* Full screen photo stack */}
+      <div className="no-bar" style={{ overflowY: "auto", scrollBehavior: "smooth" }}>
 
-        {/* LEFT — sticky */}
-        <div style={{ borderRight: "1px solid #f0ede8", display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", position: "sticky", top: 61 }}>
+        {/* Hero — full viewport */}
+        <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+          {photos[0] ? (
+            <img src={photos[0]} alt={property.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          ) : (
+            <div style={{ width: "100%", height: "100%", background: "#1a1a1a" }} />
+          )}
+          {/* Dark gradient at bottom for readability */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
 
-          {/* Property info */}
-          <div style={{ padding: "36px 32px 24px", borderBottom: "1px solid #f0ede8", flexShrink: 0 }}>
-            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "#c9a96e", textTransform: "uppercase", marginBottom: 10 }}>
+          {/* Property title over hero */}
+          <div style={{ position: "absolute", bottom: 120, left: 40, right: 400 }}>
+            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", marginBottom: 10 }}>
               {property.location}
             </div>
-            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 30, lineHeight: 1.1, marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 8 }}>
               {property.name}
             </div>
-            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, color: "#aaa", marginBottom: 16 }}>
+            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
               {property.architect}{property.year ? ` · ${property.year}` : ""}
             </div>
-            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 28, marginBottom: 14 }}>
+          </div>
+
+          {/* Price + actions top right */}
+          <div style={{ position: "absolute", bottom: 120, right: 40, textAlign: "right" }}>
+            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 36, fontWeight: 300, marginBottom: 16 }}>
               {property.price}
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-              {(property.idea_tags || []).map(tag => (
-                <span key={tag} style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, color: "#aaa", border: "1px solid #e8e4de", borderRadius: 20, padding: "3px 10px" }}>{tag}</span>
-              ))}
-              {property.landscape_tag && (
-                <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, color: "#aaa", border: "1px solid #e8e4de", borderRadius: 20, padding: "3px 10px" }}>{property.landscape_tag}</span>
-              )}
-            </div>
-            {property.significance && (
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#bbb", lineHeight: 1.6, fontStyle: "italic", marginBottom: 20 }}>
-                {property.significance}
-              </div>
-            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <button style={{ width: "100%", padding: "11px", background: "#0f0f0f", color: "#fff", border: "none", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", cursor: "pointer" }}>
+              <button style={{ padding: "10px 24px", background: "#fff", color: "#0f0f0f", border: "none", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>
                 Request a Tour
               </button>
-              <button style={{ width: "100%", padding: "11px", background: "none", color: "#0f0f0f", border: "1px solid #e0ddd8", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", cursor: "pointer" }}>
+              <button style={{ padding: "10px 24px", background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 40, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>
                 Save Estate
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Chat */}
-          <div id="chat-panel" className="no-scroll" style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
-            <Chat property={property} initialMessage={pendingMessage} chatRef={chatRef} />
+        {/* Remaining photos full width */}
+        {photos.slice(1).map((url, i) => (
+          <div key={i} style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden" }}>
+            <img src={url} alt={`${property.name} ${i + 2}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
-        </div>
+        ))}
 
-        {/* RIGHT — scrolling */}
-        <div className="no-scroll" style={{ overflowY: "auto", scrollBehavior: "smooth" }}>
-          {photos.length > 0 ? photos.map((url, i) => (
-            <div key={i} style={{ width: "100%", aspectRatio: i === 0 ? "16/9" : "3/2", overflow: "hidden" }}>
-              <img src={url} alt={`${property.name} ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        {/* Editorial text — clean, centered, generous padding */}
+        {(property.editorial || property.architect_context || property.site_context) && (
+          <div style={{ background: "#fff", color: "#0f0f0f", padding: "100px 0" }}>
+            <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 40px" }}>
+              {property.editorial && (
+                <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 22, lineHeight: 1.9, color: "#222", marginBottom: 60 }}>
+                  {property.editorial}
+                </div>
+              )}
+              {property.architect_context && (
+                <div style={{ marginBottom: 48 }}>
+                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "#bbb", textTransform: "uppercase", marginBottom: 16 }}>Architect</div>
+                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#777", lineHeight: 1.9 }}>{property.architect_context}</div>
+                </div>
+              )}
+              {property.site_context && (
+                <div>
+                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "#bbb", textTransform: "uppercase", marginBottom: 16 }}>Site</div>
+                  <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#777", lineHeight: 1.9 }}>{property.site_context}</div>
+                </div>
+              )}
             </div>
-          )) : (
-            <div style={{ width: "100%", height: "60vh", background: "#f5f3f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 20, color: "#ccc" }}>No photos yet</span>
-            </div>
-          )}
-          {property.editorial && (
-            <div style={{ padding: "80px 80px 60px" }}>
-              <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 24, lineHeight: 1.85, color: "#222", maxWidth: 640 }}>{property.editorial}</div>
-            </div>
-          )}
-          {property.architect_context && (
-            <div style={{ padding: "0 80px 60px" }}>
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.15em", color: "#ccc", textTransform: "uppercase", marginBottom: 16 }}>Architect</div>
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, lineHeight: 1.9, color: "#888", maxWidth: 560 }}>{property.architect_context}</div>
-            </div>
-          )}
-          {property.site_context && (
-            <div style={{ padding: "0 80px 80px" }}>
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, letterSpacing: "0.15em", color: "#ccc", textTransform: "uppercase", marginBottom: 16 }}>Site</div>
-              <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, lineHeight: 1.9, color: "#888", maxWidth: 560 }}>{property.site_context}</div>
-            </div>
-          )}
-          <div style={{ height: 140 }} />
-        </div>
+          </div>
+        )}
+
+        {/* Bottom padding for chat bar */}
+        <div style={{ height: 120, background: "#0c0c0c" }} />
       </div>
 
-      {/* Floating prompt bar */}
-      <FloatingPromptBar onPromptClick={handlePrompt} />
+      {/* Floating chat */}
+      <BottomChat property={property} />
     </div>
   )
 }
