@@ -5,33 +5,36 @@ function BottomChat({ property }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
-  const [placeholder, setPlaceholder] = useState("")
+  const [expanded, setExpanded] = useState(false)
+  const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const inputRef = useRef(null)
+  const messagesEndRef = useRef(null)
 
   const suggestions = [
     "What's the quietest room in the house?",
     "How does light move through the day?",
-    "What makes this house architecturally significant?",
+    "What makes this house significant?",
     "What would mornings feel like here?",
     "Who designed it and why does it matter?",
     "How does it feel from the inside?",
   ]
 
-  // Rotate placeholder suggestions
   useEffect(() => {
-    let i = 0
-    setPlaceholder(suggestions[0])
     const interval = setInterval(() => {
-      i = (i + 1) % suggestions.length
-      setPlaceholder(suggestions[i])
+      setPlaceholderIdx(i => (i + 1) % suggestions.length)
     }, 3500)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (expanded) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, expanded])
 
   const send = async (text) => {
     const msg = (text || input).trim()
     if (!msg || loading) return
     setInput("")
+    setExpanded(true)
 
     const userMessage = { role: "user", content: msg }
     const history = [...messages, userMessage]
@@ -47,10 +50,8 @@ function BottomChat({ property }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: msg, propertyId: property.id, history }),
       })
-
       if (!res.ok || !res.body) throw new Error()
       const contentType = res.headers.get("content-type") || ""
-
       if (contentType.includes("application/json")) {
         const data = await res.json()
         setMessages(m => m.map((m, i) => i === assistantIndex ? { ...m, content: data.response || "Unable to respond." } : m))
@@ -71,72 +72,83 @@ function BottomChat({ property }) {
     setLoading(false)
   }
 
-  // Last assistant message to show above input
-  const lastExchange = messages.length > 0 ? {
-    question: messages.filter(m => m.role === "user").slice(-1)[0]?.content,
-    answer: messages.filter(m => m.role === "assistant").slice(-1)[0]?.content,
-  } : null
-
   return (
     <>
       <style>{`
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes placeholderFade { 0%{opacity:0;transform:translateY(4px)} 15%{opacity:1;transform:translateY(0)} 85%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-4px)} }
+        @keyframes slideUp { from { opacity:0; transform:translateY(100%) } to { opacity:1; transform:translateY(0) } }
+        .chat-expand { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+        .msg-in { animation: fadeInUp 0.4s ease; }
       `}</style>
 
-      {/* Answer floats above the bar */}
-      {lastExchange && (
-        <div style={{
-          position: "fixed", bottom: 80, left: 0, right: 0, zIndex: 40,
-          display: "flex", justifyContent: "center",
-          padding: "0 40px", pointerEvents: "none",
-        }}>
-          <div style={{
-            maxWidth: 680, width: "100%",
-            animation: "fadeInUp 0.5s ease",
-          }}>
-            {/* Question */}
-            <div style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 12, color: "rgba(255,255,255,0.45)",
-              marginBottom: 10, letterSpacing: "0.02em",
-            }}>
-              {lastExchange.question}
-            </div>
-            {/* Answer */}
-            <div style={{
-              fontFamily: "var(--font-cormorant), serif",
-              fontStyle: "italic", fontSize: 22,
-              color: "rgba(255,255,255,0.92)",
-              lineHeight: 1.65,
-              textShadow: "0 2px 20px rgba(0,0,0,0.4)",
-            }}>
-              {lastExchange.answer}
-              {loading && !lastExchange.answer && (
-                <span style={{ display: "inline-block", width: 1.5, height: "0.8em", background: "rgba(255,255,255,0.6)", marginLeft: 3, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Fixed bottom input bar */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-        padding: "16px 40px 20px",
-        background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "0 40px 24px",
+        pointerEvents: "none",
       }}>
+
+        {/* White conversation panel — expands on first message */}
+        {expanded && messages.length > 0 && (
+          <div className="chat-expand" style={{
+            width: "100%", maxWidth: 640,
+            background: "#fff", color: "#0f0f0f",
+            borderRadius: "16px 16px 0 0",
+            padding: "28px 32px 0",
+            maxHeight: 340,
+            overflowY: "auto",
+            msOverflowStyle: "none", scrollbarWidth: "none",
+            pointerEvents: "all",
+            boxShadow: "0 -8px 40px rgba(0,0,0,0.15)",
+          }}>
+            <style>{`.chat-expand::-webkit-scrollbar{display:none}`}</style>
+            {/* Close */}
+            <button onClick={() => setExpanded(false)} style={{
+              position: "absolute", top: 16, right: 20,
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 18, color: "#ccc", lineHeight: 1,
+            }}>×</button>
+
+            {messages.map((m, i) => (
+              <div key={i} className="msg-in" style={{ marginBottom: 24 }}>
+                {m.role === "user" ? (
+                  <div style={{
+                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontSize: 12, color: "#999",
+                    marginBottom: 8, letterSpacing: "0.01em",
+                  }}>{m.content}</div>
+                ) : (
+                  <div style={{
+                    fontFamily: "var(--font-cormorant), serif",
+                    fontStyle: "italic", fontSize: 18,
+                    color: "#0f0f0f", lineHeight: 1.75,
+                  }}>
+                    {m.content}
+                    {loading && i === messages.length - 1 && !m.content && (
+                      <span style={{ display: "inline-block", width: 1.5, height: "0.8em", background: "#0f0f0f", marginLeft: 3, verticalAlign: "text-bottom", animation: "blink 0.8s step-end infinite" }} />
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={messagesEndRef} style={{ height: 8 }} />
+          </div>
+        )}
+
+        {/* Input bar */}
         <div style={{
-          maxWidth: 680, margin: "0 auto",
+          width: "100%", maxWidth: 640,
           display: "flex", alignItems: "center", gap: 12,
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.15)",
-          borderRadius: 50, padding: "12px 16px 12px 24px",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          background: expanded ? "#fff" : "transparent",
+          border: "none",
+          borderTop: expanded ? "1px solid #f0ede8" : "none",
+          borderRadius: expanded ? "0 0 16px 16px" : 50,
+          padding: "12px 14px 12px 22px",
+          transition: "all 0.3s ease",
+          pointerEvents: "all",
+          position: "relative",
+          boxShadow: expanded ? "0 8px 40px rgba(0,0,0,0.15)" : "none",
         }}>
           <input
             ref={inputRef}
@@ -146,37 +158,21 @@ function BottomChat({ property }) {
             style={{
               flex: 1, background: "none", border: "none", outline: "none",
               fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 14, color: "#fff",
-              letterSpacing: "0.01em",
+              fontSize: 13, letterSpacing: "0.01em",
+              color: expanded ? "#0f0f0f" : "#fff",
             }}
           />
-          {/* Animated placeholder when empty */}
           {!input && (
-            <div style={{
-              position: "absolute", left: 24, pointerEvents: "none",
+            <div key={placeholderIdx} style={{
+              position: "absolute", left: 22, pointerEvents: "none",
               fontFamily: "var(--font-dm-sans), sans-serif",
-              fontSize: 14, color: "rgba(255,255,255,0.3)",
-              animation: "placeholderFade 3.5s ease infinite",
-              key: placeholder,
+              fontSize: 13, color: expanded ? "#bbb" : "rgba(255,255,255,0.35)",
+              animation: "fadeInUp 0.4s ease",
             }}>
-              {placeholder}
+              {suggestions[placeholderIdx]}
             </div>
           )}
-          <button
-            onClick={() => send()}
-            disabled={loading || !input.trim()}
-            style={{
-              width: 32, height: 32, borderRadius: "50%",
-              background: input.trim() ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.1)",
-              border: "none", cursor: input.trim() ? "pointer" : "default",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.2s", flexShrink: 0,
-              color: input.trim() ? "#0f0f0f" : "rgba(255,255,255,0.3)",
-              fontSize: 14,
-            }}
-          >
-            →
-          </button>
+
         </div>
       </div>
     </>
