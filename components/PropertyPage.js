@@ -317,7 +317,7 @@ export default function PropertyPage({ property, allProperties, onBack }) {
           background: "none", border: "none", cursor: "pointer",
           fontFamily: "'DM Sans', sans-serif", fontSize: 11,
           letterSpacing: "0.22em", color: "#0f0f0f", textTransform: "uppercase",
-        }}>Threshold</button>
+        }} style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 13, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500, background: "none", border: "none", cursor: "pointer" }}>THRESHOLD</button>
         <button onClick={onBack} style={{
           background: "none", border: "none", cursor: "pointer",
           fontFamily: "'DM Sans', sans-serif", fontSize: 11,

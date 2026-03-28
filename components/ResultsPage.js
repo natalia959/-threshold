@@ -105,7 +105,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
       {/* Nav */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, padding: "16px 32px", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 24, zIndex: 50, background: "rgba(12,12,12,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 13, letterSpacing: "0.2em", color: "#fff", textAlign: "left" }}>
-          THRESHOLD
+          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.04em", color: "#F7F4EC" }}>THRESHOLD</span>
         </button>
         <div style={{ position: "relative", background: "rgba(255,255,255,0.07)", borderRadius: 50, display: "flex", alignItems: "center", padding: "0 18px", width: 420 }}>
           <input

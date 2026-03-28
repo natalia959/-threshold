@@ -84,7 +84,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
       {/* Nav */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, padding: "16px 32px", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 24, zIndex: 50 }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, letterSpacing: "0.24em", color: "#fff" }}>THRESHOLD</span>
+          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 13, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500 }}>THRESHOLD</span>
         </div>
 
         {/* Search bar */}

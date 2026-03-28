@@ -266,7 +266,7 @@ export default function PropertyDetailPage({ params }) {
         borderBottom: "1px solid rgba(0,0,0,0.07)",
         background: "#fff",
       }}>
-        <a href="/" style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.22em", color: "#0f0f0f", textDecoration: "none", textTransform: "uppercase" }}>Threshold</a>
+        <a href="/" style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 13, letterSpacing: "0.04em", color: "#0f0f0f", textDecoration: "none", fontWeight: 500 }}>THRESHOLD</a>
         <a href="/" style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#bbb", textDecoration: "none" }}>← Collection</a>
       </nav>
 
