@@ -3,6 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase-admin"
 
 const client = new Anthropic()
 
+// Delimiter between the properties payload and the Claude stream
+const SPLIT = "\n\x1E\n"
+
 export async function POST(request) {
   try {
     const { query } = await request.json()
@@ -36,26 +39,37 @@ Rules:
 - matched: 1-3 items, alsoLove: 2-3 items
 - Only use ids from the collection above`
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: "user", content: query }],
+    const encoder = new TextEncoder()
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        // Phase 1 — send properties map immediately (Supabase is already done)
+        controller.enqueue(encoder.encode(JSON.stringify(properties) + SPLIT))
+
+        // Phase 2 — stream Claude's JSON as it generates
+        const aiStream = client.messages.stream({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 400,
+          system: systemPrompt,
+          messages: [{ role: "user", content: query }],
+        })
+
+        for await (const chunk of aiStream) {
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            controller.enqueue(encoder.encode(chunk.delta.text))
+          }
+        }
+
+        controller.close()
+      },
     })
 
-    const text = message.content.find(b => b.type === "text")?.text || ""
-    const clean = text.replace(/```json|```/g, "").trim()
-    const result = JSON.parse(clean)
-
-    const hydrate = (ids) => (ids || []).map(item => ({
-      ...item,
-      property: properties.find(p => p.id === item.id)
-    })).filter(item => item.property)
-
-    return Response.json({
-      interpretation: result.interpretation,
-      matched: hydrate(result.matched),
-      alsoLove: hydrate(result.alsoLove),
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+      },
     })
 
   } catch (error) {
