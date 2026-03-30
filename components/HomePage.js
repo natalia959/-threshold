@@ -1,134 +1,326 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import { supabase } from "../lib/supabase"
 
-const QUERIES = [
-  { text: "'I want to live in a house with ocean views'", cards: ["#1a3a4a","#0d2535","#1e4558","#0a1e2e","#163344","#1a3a4a","#0d2535","#1e4558"] },
-  { text: "'I'm looking for something with big gardens'", cards: ["#1a3020","#0d2015","#243d28","#162a1a","#1f3825","#1a3020","#0d2015","#243d28"] },
-  { text: "'Show me a Neutra with original details intact'", cards: ["#2a2420","#1e1a17","#332e29","#251f1c","#2e2822","#2a2420","#1e1a17","#332e29"] },
-  { text: "'Something with rammed earth and desert light'", cards: ["#3a2e1a","#2e2415","#443620","#261e10","#382915","#3a2e1a","#2e2415","#443620"] },
-  { text: "'A house designed around solitude and concrete'", cards: ["#1e1e28","#16161e","#252530","#121218","#1a1a24","#1e1e28","#16161e","#252530"] },
+// ── Prompts with semantic property matching ────────────────────────────────
+
+const PROMPTS = [
+  { text: "Homes where light defines the space",        match: p => (p.idea_tags||[]).includes("Light as Material") || p.landscape_tag === "Coastal" },
+  { text: "Concrete houses in Los Angeles",             match: p => p.location?.toLowerCase().includes("los angeles") || p.location?.toLowerCase().includes("l.a.") },
+  { text: "Glass pavilions overlooking the city",       match: p => (p.idea_tags||[]).includes("Indoors Dissolved") || p.landscape_tag === "Urban" },
+  { text: "Homes designed for gathering",               match: p => (p.idea_tags||[]).includes("Gathering") },
+  { text: "Minimalist interiors with natural materials",match: p => (p.idea_tags||[]).includes("Solitude") },
+  { text: "Something with large gardens and privacy",   match: p => (p.idea_tags||[]).includes("Garden as Architecture") },
 ]
 
-function GalleryStrip({ cards, visible }) {
+const FALLBACK_COLORS = [
+  "#1a2030","#182818","#282018","#1e1e2c","#201a28","#1a2818","#2c2018","#181e2c",
+]
+
+function imagesForPrompt(properties, idx) {
+  if (!properties.length) return FALLBACK_COLORS.map(c => ({ color: c }))
+  const prompt = PROMPTS[idx]
+  const filtered = properties.filter(p => p.hero_photo && prompt.match(p))
+  const pool = filtered.length >= 4 ? filtered : properties.filter(p => p.hero_photo)
+  return pool.length ? pool.map(p => ({ url: p.hero_photo, name: p.name }))
+             : FALLBACK_COLORS.map(c => ({ color: c }))
+}
+
+// ── Gallery strip ──────────────────────────────────────────────────────────
+
+const HEIGHTS = [260, 220, 300, 240, 280, 200, 260, 240]
+
+function GalleryStrip({ images }) {
   const trackRef = useRef(null)
-  const posRef = useRef(0)
-  const rafRef = useRef(null)
+  const posRef   = useRef(0)
+  const rafRef   = useRef(null)
+  const CARD_W   = 300 + 10
 
   useEffect(() => {
+    posRef.current = 0
     const track = trackRef.current
-    if (!track) return
-    const cardW = 320 + 12
-    const total = cards.length * cardW
-    const animate = () => {
-      posRef.current -= 0.4
-      if (posRef.current < -total) posRef.current = 0
-      track.style.transform = `translateX(${posRef.current}px)`
-      rafRef.current = requestAnimationFrame(animate)
+    if (!track || !images.length) return
+    const total = images.length * CARD_W
+    const tick = () => {
+      posRef.current -= 0.28
+      if (posRef.current <= -total) posRef.current = 0
+      if (track) track.style.transform = `translateX(${posRef.current}px)`
+      rafRef.current = requestAnimationFrame(tick)
     }
-    animate()
+    rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [cards])
+  }, [images])
 
-  const tripled = [...cards, ...cards, ...cards]
+  const tiles = [...images, ...images, ...images]
+
   return (
-    <div style={{ overflow: "hidden", width: "100%", opacity: visible ? 1 : 0, transition: "opacity 1s ease", position: "absolute", bottom: 0, left: 0, right: 0 }}>
-      <div ref={trackRef} style={{ display: "flex", gap: 12, willChange: "transform", alignItems: "flex-end" }}>
-        {tripled.map((color, i) => {
-          const h = i % 3 === 0 ? 420 : i % 3 === 1 ? 360 : 480
-          return (
-            <div key={i} style={{ flexShrink: 0, width: 320, height: h, borderRadius: 14, background: color, position: "relative" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, transparent 50%)", borderRadius: 14 }} />
-            </div>
-          )
-        })}
+    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+      <div ref={trackRef} style={{ display: "flex", gap: 10, alignItems: "flex-end", willChange: "transform" }}>
+        {tiles.map((img, i) => (
+          <div key={i} style={{
+            flexShrink: 0, width: 300, height: HEIGHTS[i % HEIGHTS.length],
+            borderRadius: 8, overflow: "hidden",
+            background: img.url ? "#111" : img.color || "#1a1a24",
+          }}>
+            {img.url && (
+              <img src={img.url} alt={img.name || ""}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
-  const [queryIndex, setQueryIndex] = useState(0)
-  const [displayIndex, setDisplayIndex] = useState(0)
-  const [textVisible, setTextVisible] = useState(true)
-  const [focused, setFocused] = useState(false)
+// ── Collection card (scroll section) ──────────────────────────────────────
 
+function CollectionCard({ property, large }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <a href={`/property/${property.id}`}
+      style={{ textDecoration: "none", display: "block", borderRadius: 8, overflow: "hidden", background: "#111", cursor: "pointer", transform: hovered ? "translateY(-3px)" : "none", transition: "transform 0.3s ease", boxShadow: hovered ? "0 16px 48px rgba(0,0,0,0.6)" : "none" }}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+    >
+      <div style={{ position: "relative", height: large ? 520 : 320 }}>
+        {property.hero_photo
+          ? <img src={property.hero_photo} alt={property.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+          : <div style={{ position: "absolute", inset: 0, background: "#1a1a24" }} />
+        }
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,12,12,0.92) 0%, transparent 52%)" }} />
+        <div style={{ position: "absolute", top: 16, right: 16, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.14em", color: "rgba(247,244,236,0.35)", textTransform: "uppercase" }}>
+          {property.location}
+        </div>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "18px 22px" }}>
+          <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: large ? 24 : 19, color: "#F7F4EC", lineHeight: 1.1, marginBottom: 4 }}>{property.name}</div>
+          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "rgba(247,244,236,0.4)" }}>{property.architect}{property.year ? ` · ${property.year}` : ""}</div>
+        </div>
+      </div>
+    </a>
+  )
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────
+
+export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
+  const [properties,    setProperties]    = useState([])
+  const [promptIdx,     setPromptIdx]     = useState(0)
+  const [promptVisible, setPromptVisible] = useState(true)
+  const [galleryImages, setGalleryImages] = useState(FALLBACK_COLORS.map(c => ({ color: c })))
+  const [galleryOpacity,setGalleryOpacity]= useState(0)
+  const [galleryKey,    setGalleryKey]    = useState(0)
+  const [focused,       setFocused]       = useState(false)
+  const collectionRef = useRef(null)
+
+  // Fetch properties
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTextVisible(false)
+    supabase
+      .from("properties")
+      .select("id, name, location, hero_photo, idea_tags, landscape_tag, architect, year, price")
+      .eq("published", true)
+      .then(({ data }) => {
+        if (data?.length) {
+          setProperties(data)
+          const imgs = imagesForPrompt(data, 0)
+          setGalleryImages(imgs)
+          setGalleryKey(k => k + 1)
+        }
+        setGalleryOpacity(1)
+      })
+      .catch(() => setGalleryOpacity(1))
+  }, [])
+
+  // Rotate prompts + crossfade gallery
+  useEffect(() => {
+    const t = setInterval(() => {
+      setPromptVisible(false)
       setTimeout(() => {
-        const next = (queryIndex + 1) % QUERIES.length
-        setQueryIndex(next)
-        setDisplayIndex(next)
-        setTextVisible(true)
-      }, 500)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [queryIndex])
+        const next = (promptIdx + 1) % PROMPTS.length
+        setPromptIdx(next)
+        setPromptVisible(true)
+        // crossfade gallery
+        setGalleryOpacity(0)
+        setTimeout(() => {
+          setGalleryImages(imagesForPrompt(properties, next))
+          setGalleryKey(k => k + 1)
+          setGalleryOpacity(1)
+        }, 500)
+      }, 450)
+    }, 5500)
+    return () => clearInterval(t)
+  }, [promptIdx, properties])
+
+  const submit = () => { if (searchValue.trim()) onSearch(searchValue.trim()) }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#0c0c0c", overflow: "hidden", position: "relative" }}>
+    <div style={{ background: "#0c0c0c", color: "#F7F4EC", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
-        ::placeholder { color: transparent !important; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:0.7;transform:translateY(5px)} }
+        .search-line { border-bottom: 1px solid rgba(247,244,236,0.18); transition: border-color 0.3s ease; }
+        .search-line:focus-within { border-color: rgba(247,244,236,0.5); }
+        .search-input { background:transparent; border:none; outline:none; width:100%; }
+        .search-input::placeholder { color: transparent; }
+        .nav-join { transition: border-color 0.2s, color 0.2s; }
+        .nav-join:hover { border-color: rgba(247,244,236,0.45) !important; color: rgba(247,244,236,0.9) !important; }
+        .nav-signin:hover { color: rgba(247,244,236,0.9) !important; }
       `}</style>
 
-      {/* Gallery — bottom 52vh only */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: "52vh", overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-        {QUERIES.map((q, i) => <GalleryStrip key={i} cards={q.cards} visible={i === displayIndex} />)}
+      {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
+      <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+
+        {/* Gallery strip */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, height: "44vh",
+          opacity: galleryOpacity, transition: "opacity 0.9s ease", zIndex: 0,
+        }}>
+          <GalleryStrip key={galleryKey} images={galleryImages} />
+        </div>
+
+        {/* Gradient: dark at top, dissolves over gallery */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+          background: "linear-gradient(to bottom, #0c0c0c 0%, #0c0c0c 38%, rgba(12,12,12,0.88) 55%, rgba(12,12,12,0.5) 74%, rgba(12,12,12,0.1) 100%)" }} />
+
+        {/* Nav */}
+        <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
+          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 14, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500 }}>
+            THRESHOLD
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+            <button className="nav-signin" onClick={onSignIn} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: 0 }}>
+              {user ? "My Portal" : "Sign In"}
+            </button>
+            <button className="nav-join" onClick={onSignUp} style={{ background: "none", border: "1px solid rgba(247,244,236,0.18)", borderRadius: 40, cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: "8px 20px" }}>
+              Join Reserved
+            </button>
+          </div>
+        </nav>
+
+        {/* Hero content — fills upper 56% */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: "56vh",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          zIndex: 10, textAlign: "center", padding: "0 48px",
+        }}>
+
+          {/* Eyebrow */}
+          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.28em", color: "rgba(247,244,236,0.25)", textTransform: "uppercase", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }}>
+            By invitation
+          </div>
+
+          {/* Headline */}
+          <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(42px, 5.2vw, 72px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 20px", animation: "fadeUp 1s ease 0.3s both", maxWidth: 720 }}>
+            Private Entrance to<br />Architectural Living
+          </h1>
+
+          {/* Subline */}
+          <p style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "rgba(247,244,236,0.36)", letterSpacing: "0.04em", margin: "0 0 48px", animation: "fadeUp 1s ease 0.45s both", lineHeight: 1.8 }}>
+            A curated collection of architecturally significant homes.
+          </p>
+
+          {/* Search */}
+          <div style={{ width: "100%", maxWidth: 580, animation: "fadeUp 1s ease 0.6s both" }}>
+            <div className="search-line" style={{ display: "flex", alignItems: "center", position: "relative", paddingBottom: 2 }}>
+
+              {/* Rotating prompt */}
+              {!searchValue && (
+                <div style={{
+                  position: "absolute", left: 0, right: 40, pointerEvents: "none",
+                  fontFamily: "var(--font-cormorant), serif", fontStyle: "italic",
+                  fontSize: "clamp(18px, 1.6vw, 22px)", color: "rgba(247,244,236,0.28)",
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                  opacity: promptVisible ? 1 : 0,
+                  transform: promptVisible ? "translateY(0)" : "translateY(-5px)",
+                  transition: "opacity 0.45s ease, transform 0.45s ease",
+                }}>
+                  {PROMPTS[promptIdx].text}
+                </div>
+              )}
+
+              <input
+                className="search-input"
+                value={searchValue}
+                onChange={e => setSearchValue(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                onKeyDown={e => e.key === "Enter" && submit()}
+                style={{
+                  fontFamily: "var(--font-cormorant), serif", fontStyle: "italic",
+                  fontSize: "clamp(18px, 1.6vw, 22px)", color: "#F7F4EC",
+                  padding: "0 0 14px", letterSpacing: "0.01em",
+                }}
+              />
+
+              {/* Search icon / send */}
+              <button onClick={submit} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 0 14px", color: "rgba(247,244,236,0.3)", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                {searchValue
+                  ? <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.5 14V3M3 8.5L8.5 3L14 8.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2"/><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                }
+              </button>
+            </div>
+
+            {/* Helper */}
+            <div style={{ marginTop: 16, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.2)", textTransform: "uppercase", textAlign: "center" }}>
+              Describe what you're drawn to
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div
+          onClick={() => collectionRef.current?.scrollIntoView({ behavior: "smooth" })}
+          style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", zIndex: 10, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, animation: "fadeIn 1s ease 1.8s both" }}>
+          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(247,244,236,0.2)", textTransform: "uppercase" }}>Collection</div>
+          <div style={{ width: 1, height: 28, background: "rgba(247,244,236,0.15)", animation: "scrollPulse 2.5s ease-in-out infinite" }} />
+        </div>
       </div>
 
-      {/* Gradient */}
-      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to bottom, rgba(12,12,12,1) 0%, rgba(12,12,12,1) 60%, rgba(12,12,12,0.5) 80%, rgba(12,12,12,0.0) 100%)", pointerEvents: "none", zIndex: 1 }} />
+      {/* ══ COLLECTION SCROLL SECTION ════════════════════════════════════════ */}
+      <div ref={collectionRef} style={{ padding: "100px 48px 120px" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
 
-      {/* Nav */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, padding: "16px 32px", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 24, zIndex: 50 }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 13, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500 }}>THRESHOLD</span>
-        </div>
+          {/* Title */}
+          <div style={{ marginBottom: 60 }}>
+            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.24em", color: "rgba(247,244,236,0.2)", textTransform: "uppercase", marginBottom: 16 }}>
+              Selected for this season
+            </div>
+            <h2 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(36px, 3.6vw, 54px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.08 }}>
+              A private collection
+            </h2>
+          </div>
 
-        {/* Search bar */}
-        <div style={{ position: "relative", background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", borderRadius: 50, display: "flex", alignItems: "center", padding: "0 18px", width: 420 }}>
-          {!focused && !searchValue && (
-            <span style={{ position: "absolute", left: 18, right: 18, display: "flex", alignItems: "center", gap: 5, pointerEvents: "none", overflow: "hidden" }}>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: 13, letterSpacing: "0.04em", color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>Try</span>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: 13, letterSpacing: "0.04em", color: "rgba(255,255,255,0.75)", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: textVisible ? 1 : 0, transition: "opacity 0.45s ease" }}>{QUERIES[queryIndex].text}</span>
-            </span>
+          {/* Property grid */}
+          {properties.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 14 }}>
+              {properties.slice(0, Math.min(6, properties.length)).map((p, i) => (
+                <CollectionCard key={p.id} property={p} large={i === 0} />
+              ))}
+            </div>
+          ) : (
+            // Skeleton while loading
+            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 14 }}>
+              {[520, 320, 320].map((h, i) => (
+                <div key={i} style={{ height: h, borderRadius: 8, background: "#141414", animation: "pulse 2s ease-in-out infinite" }} />
+              ))}
+            </div>
           )}
-          {focused && !searchValue && (
-            <span style={{ position: "absolute", left: 18, right: 18, pointerEvents: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: 13, letterSpacing: "0.04em", color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>Search Threshold...</span>
+
+          {/* Explore CTA */}
+          {properties.length > 0 && (
+            <div style={{ marginTop: 56, textAlign: "center" }}>
+              <button
+                onClick={() => onSearch("architecturally significant homes")}
+                style={{ background: "none", border: "1px solid rgba(247,244,236,0.15)", borderRadius: 40, padding: "13px 36px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.1em", color: "rgba(247,244,236,0.45)", transition: "border-color 0.2s, color 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.4)"; e.currentTarget.style.color = "rgba(247,244,236,0.8)" }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.15)"; e.currentTarget.style.color = "rgba(247,244,236,0.45)" }}
+              >
+                Explore the Collection
+              </button>
+            </div>
           )}
-          <input
-            value={searchValue}
-            onChange={e => setSearchValue(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={e => e.key === "Enter" && searchValue.trim() && onSearch(searchValue)}
-            style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: 13, letterSpacing: "0.04em", color: "#fff", padding: "14px 0" }}
-          />
-          {searchValue && (
-            <button onClick={() => setSearchValue("")} style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1 1L9 9M9 1L1 9" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          )}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onSignIn} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "9px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.03em" }}>{user ? "My Portal" : "Sign In"}</button>
-        </div>
-      </nav>
-
-      {/* Hero text */}
-      <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingBottom: "42vh", zIndex: 10, pointerEvents: "none", textAlign: "center" }}>
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.22em", color: "rgba(255,255,255,0.25)", textTransform: "uppercase", marginBottom: 16, animation: "fadeUp 1s ease 0.2s both" }}>A cabinet of architectural curiosities</div>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(42px, 6vw, 84px)", fontWeight: 300, lineHeight: 1.06, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 32px", animation: "fadeUp 1s ease 0.4s both" }}>
-          Find the house<br />that finds you back.
-        </h1>
-        <div style={{ pointerEvents: "all", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "fadeUp 1s ease 0.6s both" }}>
-          <button onClick={onSignUp} style={{ background: "rgba(255,255,255,0.9)", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "13px 32px", fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "0.04em" }}>Request Verified Access</button>
-
         </div>
       </div>
     </div>
