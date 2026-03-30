@@ -1,98 +1,119 @@
 "use client"
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 
-const PROMPTS = [
-  "Does the kitchen get morning light?",
-  "What is the countertop material?",
-  "How does the light change throughout the day?",
-  "How far is Erewhon?",
-  "What makes this home unique?",
+const ASK_PROMPTS = [
+  "Does the kitchen receive morning light?",
+  "What materials define this space?",
+  "How does the light move throughout the day?",
+  "What makes this home architecturally significant?",
+  "How does the site shape the interior experience?",
 ]
 
-const PAIRING = {
-  furniture: [
-    { name: "Lounge Chair & Ottoman", brand: "Charles & Ray Eames", note: "The original resolution of comfort and steel." },
-    { name: "Barcelona Chair", brand: "Ludwig Mies van der Rohe", note: "Conceived for a king. At home here." },
-    { name: "Bertoia Diamond Chair", brand: "Harry Bertoia", note: "Wire and air — it disappears into the view." },
-  ],
-  objects: [
-    { name: "Noguchi Akari 1A", brand: "Isamu Noguchi", note: "Light as sculpture. Never overhead." },
-    { name: "Blown Glass Carafe", brand: "Ichendorf Milano", note: "Water catches the afternoon differently here." },
-    { name: "Plinth Block", brand: "Muller Van Severen", note: "A surface that asks nothing of the room." },
-  ],
-  materials: [
-    { name: "Honed Black Slate", brand: "Antolini", note: "Cool underfoot. Holds the heat of the afternoon." },
-    { name: "Raw Linen Drapery", brand: "Dedar Milano", note: "The wind moves through it like a thought." },
-    { name: "Oiled White Oak", brand: "Dinesen", note: "Time will only improve it." },
-  ],
-  wardrobe: [
-    { name: "Cotton Turtleneck", brand: "Lemaire", note: "Nothing competes with the view." },
-    { name: "Linen Trousers", brand: "Studio Nicholson", note: "Made for a life with more space in it." },
-  ],
+const DEFAULT_PAIRINGS = [
+  { name: "Eames Lounge Chair", designer: "Charles & Ray Eames", year: "1956", reason: "The original resolution of comfort and steel. It never needs explaining.", price: "$5,499", image: "" },
+  { name: "Noguchi Akari 1A", designer: "Isamu Noguchi", year: "1951", reason: "Light as sculpture. Never overhead. Always exactly here.", price: "$390", image: "" },
+  { name: "Honed Black Slate", designer: "Natural stone", year: "", reason: "Cool underfoot. Holds the heat of the afternoon into evening.", price: "$28/sqft", image: "" },
+  { name: "Linen Trousers", designer: "Margaret Howell", year: "", reason: "Made for a life with more space in it.", price: "$340", image: "" },
+]
+const PAIRING_LABELS = ["Furniture", "Object", "Material", "Wardrobe"]
+
+// ── Cinematic Ask Overlay ─────────────────────────────────────────────────────
+function AskOverlay({ question, answer, onClose }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(6,6,6,0.92)",
+        backdropFilter: "blur(28px) saturate(0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "80px 48px",
+        animation: "fadeIn 0.45s ease",
+        cursor: "pointer",
+      }}
+    >
+      <div onClick={e => e.stopPropagation()} style={{ maxWidth: 600, width: "100%", textAlign: "center" }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.22em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 40 }}>
+          {question}
+        </div>
+        <div style={{ minHeight: 80 }}>
+          {!answer
+            ? <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 32, color: "rgba(255,255,255,0.18)" }}>—</p>
+            : <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "clamp(22px, 2.8vw, 33px)", color: "rgba(255,255,255,0.88)", lineHeight: 1.68, animation: "fadeUp 0.6s ease" }}>
+                {answer}
+              </p>
+          }
+        </div>
+        <button onClick={onClose} style={{ marginTop: 56, background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "rgba(255,255,255,0.2)", textTransform: "uppercase" }}>
+          Continue exploring ↓
+        </button>
+      </div>
+    </div>
+  )
 }
 
-function AskBar({ property }) {
-  const [open, setOpen] = useState(false)
-  const [input, setInput] = useState("")
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(false)
+// ── Related card ──────────────────────────────────────────────────────────────
+function RelatedCard({ property }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <a href={`/property/${property.id}`} style={{ textDecoration: "none", display: "block" }}>
+      <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+        style={{ borderRadius: 10, overflow: "hidden", background: "#111", transform: hovered ? "translateY(-3px)" : "translateY(0)", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: hovered ? "0 16px 40px rgba(0,0,0,0.55)" : "none" }}>
+        <div style={{ position: "relative", height: 240, overflow: "hidden" }}>
+          {property.hero_photo && <img src={property.hero_photo} alt={property.name} style={{ width: "100%", height: "100%", objectFit: "cover", transform: hovered ? "scale(1.04)" : "scale(1)", transition: "transform 0.7s ease" }} />}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)" }} />
+          <div style={{ position: "absolute", top: 14, right: 14, fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>{property.location}</div>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 18px" }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: "#fff", lineHeight: 1.2, marginBottom: 3 }}>{property.name}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{property.architect}{property.year ? ` · ${property.year}` : ""}</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+export default function PropertyPage({ property, allProperties = [], onBack }) {
+  const [askValue, setAskValue] = useState("")
   const [promptIdx, setPromptIdx] = useState(0)
   const [promptVisible, setPromptVisible] = useState(true)
-  const inputRef = useRef(null)
-  const panelRef = useRef(null)
-  const messagesEndRef = useRef(null)
+  const [askOverlay, setAskOverlay] = useState(null)
+  const [pairings, setPairings] = useState(null)
+  const [saved, setSaved] = useState(false)
 
-  // Rotate placeholder every 5s with smooth crossfade
   useEffect(() => {
     const t = setInterval(() => {
       setPromptVisible(false)
-      setTimeout(() => {
-        setPromptIdx(i => (i + 1) % PROMPTS.length)
-        setPromptVisible(true)
-      }, 380)
-    }, 5000)
+      setTimeout(() => { setPromptIdx(i => (i + 1) % ASK_PROMPTS.length); setPromptVisible(true) }, 380)
+    }, 4800)
     return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 80)
-  }, [open])
+    if (!property?.id) return
+    fetch("/api/furniture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property }) })
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d?.suggestions) && d.suggestions.length) setPairings(d.suggestions) })
+      .catch(() => {})
+  }, [property?.id])
 
-  useEffect(() => {
-    if (open && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [messages, open])
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false)
-    }
-    if (open) document.addEventListener("mousedown", handler)
-    return () => document.removeEventListener("mousedown", handler)
-  }, [open])
-
-  const send = async (text) => {
-    const msg = (text || input).trim()
-    if (!msg || loading) return
-    setInput("")
-    setOpen(true)
-    const history = [...messages, { role: "user", content: msg }]
-    setMessages(history)
-    setLoading(true)
-    const aiIdx = history.length
-    setMessages(m => [...m, { role: "assistant", content: "" }])
+  const handleAsk = async () => {
+    const q = askValue.trim()
+    if (!q) return
+    setAskValue("")
+    setAskOverlay({ question: q, answer: "" })
     try {
       const res = await fetch("/api/insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: msg, propertyId: property.id, history }),
+        body: JSON.stringify({ query: q, propertyId: property.id, history: [] }),
       })
-      if (!res.ok || !res.body) throw new Error()
+      if (!res.body) throw new Error()
       const ct = res.headers.get("content-type") || ""
       if (ct.includes("application/json")) {
         const data = await res.json()
-        setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: data.response || "" } : x))
+        setAskOverlay(prev => ({ ...prev, answer: data.response || "" }))
       } else {
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
@@ -101,543 +122,324 @@ function AskBar({ property }) {
           const { done, value } = await reader.read()
           if (done) break
           full += decoder.decode(value, { stream: true })
-          setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: full } : x))
+          setAskOverlay(prev => ({ ...prev, answer: full }))
         }
       }
     } catch {
-      setMessages(m => m.map((x, i) => i === aiIdx ? { ...x, content: "Unable to respond right now." } : x))
+      setAskOverlay(prev => ({ ...prev, answer: "The house is quiet right now." }))
     }
-    setLoading(false)
   }
 
+  if (!property) return null
+
+  const rawPhotos = (property.photos || []).filter(Boolean)
+  const photos = property.hero_photo && !rawPhotos.includes(property.hero_photo)
+    ? [property.hero_photo, ...rawPhotos]
+    : rawPhotos.length ? rawPhotos : [property.hero_photo].filter(Boolean)
+
+  const tags = [...(property.idea_tags || []), property.landscape_tag].filter(Boolean)
+  const editorialParagraphs = typeof property.editorial === "string"
+    ? property.editorial.split(/\n\n+/).filter(Boolean)
+    : Array.isArray(property.editorial) ? property.editorial : []
+  const displayPairings = (pairings || DEFAULT_PAIRINGS).slice(0, 4)
+  const related = (allProperties || []).filter(p => p.id !== property.id).slice(0, 3)
+
   return (
-    <>
+    <div style={{ background: "#0c0c0c", color: "#fff", minHeight: "100vh" }}>
       <style>{`
-        @keyframes askExpand {
-          from { opacity: 0; transform: translateY(10px) scaleY(0.95); }
-          to   { opacity: 1; transform: translateY(0) scaleY(1); }
-        }
-        @keyframes msgIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .ask-panel-scroll::-webkit-scrollbar { display: none; }
-        .ask-panel-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .ask-bar-input::placeholder { color: transparent; }
-        .ask-bar-wrap:focus-within { border-color: rgba(0,0,0,0.28) !important; box-shadow: 0 2px 16px rgba(0,0,0,0.07) !important; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes scrollPulse { 0%,100%{opacity:0.18;transform:scaleY(1)} 50%{opacity:0.45;transform:scaleY(1.18)} }
+        ::-webkit-scrollbar { display:none; }
       `}</style>
 
-      <div ref={panelRef} style={{
-        position: "fixed", bottom: 32, left: 40, zIndex: 200,
-        width: 336, fontFamily: "'DM Sans', sans-serif",
-      }}>
+      {askOverlay && <AskOverlay question={askOverlay.question} answer={askOverlay.answer} onClose={() => setAskOverlay(null)} />}
 
-        {/* Suggestion chips — shown when open, no messages yet */}
-        {open && messages.length === 0 && (
-          <div style={{
-            marginBottom: 8,
-            background: "#fff",
-            border: "1px solid rgba(0,0,0,0.1)",
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.09)",
-            animation: "askExpand 0.25s cubic-bezier(0.16,1,0.3,1)",
-            transformOrigin: "bottom left",
-          }}>
-            {PROMPTS.map((p, i) => (
-              <button
-                key={i}
-                onClick={() => send(p)}
-                style={{
-                  display: "block", width: "100%", textAlign: "left",
-                  padding: "11px 16px",
-                  background: "none", border: "none",
-                  borderBottom: i < PROMPTS.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 12.5,
-                  color: "#999", cursor: "pointer",
-                  transition: "background 0.12s, color 0.12s",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#f9f8f6"; e.currentTarget.style.color = "#222" }}
-                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#999" }}
-              >{p}</button>
-            ))}
-          </div>
-        )}
+      {/* ═══ HERO ════════════════════════════════════════════════════════════ */}
+      <section style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+        {photos[0]
+          ? <img src={photos[0]} alt={property.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+          : <div style={{ position: "absolute", inset: 0, background: "#1a1a20" }} />
+        }
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,6,6,0.96) 0%, rgba(6,6,6,0.2) 38%, transparent 62%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(6,6,6,0.38) 0%, transparent 20%)" }} />
 
-        {/* Conversation panel */}
-        {messages.length > 0 && (
-          <div
-            className="ask-panel-scroll"
-            style={{
-              marginBottom: 8,
-              background: "#fff",
-              border: "1px solid rgba(0,0,0,0.1)",
-              borderRadius: 8,
-              padding: "20px 20px 16px",
-              maxHeight: 300, overflowY: "auto",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.09)",
-              animation: "askExpand 0.28s cubic-bezier(0.16,1,0.3,1)",
-              transformOrigin: "bottom left",
-            }}
-          >
-            {messages.map((m, i) => (
-              <div key={i} style={{ marginBottom: 18, animation: "msgIn 0.3s ease" }}>
-                {m.role === "user" ? (
-                  <div style={{ fontSize: 11, color: "#bbb", letterSpacing: "0.02em" }}>{m.content}</div>
-                ) : (
-                  <div style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: 17, color: "#1a1a1a",
-                    lineHeight: 1.82, fontStyle: "italic",
-                    marginTop: 6,
-                  }}>
-                    {m.content
-                      ? m.content.split(/\n\n+/).filter(Boolean).map((p, pi) => (
-                          <p key={pi} style={{ margin: pi > 0 ? "12px 0 0" : 0 }}>{p}</p>
-                        ))
-                      : <span style={{ color: "#ccc" }}>···</span>
-                    }
-                  </div>
-                )}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-
-        {/* The bar — default state: simple input field */}
-        <div
-          className="ask-bar-wrap"
-          style={{
-            display: "flex", alignItems: "center",
-            background: "#fff",
-            border: "1px solid rgba(0,0,0,0.16)",
-            borderRadius: 6,
-            padding: "0 14px",
-            height: 44,
-            cursor: "text",
-            position: "relative",
-            transition: "border-color 0.18s, box-shadow 0.18s",
-            boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
-          }}
-          onClick={() => { setOpen(true); inputRef.current?.focus() }}
-        >
-          {/* Rotating placeholder with crossfade */}
-          {!input && (
-            <div style={{
-              position: "absolute", left: 14, right: 44,
-              fontSize: 13, color: "#b0b0b0",
-              pointerEvents: "none",
-              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              opacity: promptVisible ? 1 : 0,
-              transform: promptVisible ? "translateY(0)" : "translateY(-3px)",
-              transition: "opacity 0.38s ease, transform 0.38s ease",
-              letterSpacing: "0.01em",
-            }}>
-              {PROMPTS[promptIdx]}
-            </div>
-          )}
-          <input
-            ref={inputRef}
-            className="ask-bar-input"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") { send(); setOpen(false) }
-              if (e.key === "Escape") { setOpen(false); inputRef.current?.blur() }
-            }}
-            onFocus={() => setOpen(true)}
-            style={{
-              flex: 1, background: "none", border: "none", outline: "none",
-              fontFamily: "'DM Sans', sans-serif", fontSize: 13,
-              color: "#1a1a1a", letterSpacing: "0.01em",
-            }}
-          />
-          {input && (
-            <button
-              onClick={e => { e.stopPropagation(); send(); setOpen(false) }}
-              style={{
-                flexShrink: 0, background: "#0f0f0f", border: "none",
-                borderRadius: "50%", width: 26, height: 26,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", marginLeft: 8,
-              }}
-            >
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                <path d="M5.5 9.5V1.5M1.5 5.5L5.5 1.5L9.5 5.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+        <nav style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "28px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 10 }}>
+          <button onClick={onBack || (() => window.history.back())} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.04em", fontSize: 14, color: "#F7F4EC" }}>THRESHOLD</span>
+          </button>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button onClick={() => setSaved(s => !s)} style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.13)", borderRadius: 40, padding: "8px 20px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.48)", transition: "all 0.2s" }}>
+              {saved ? "Saved ✦" : "Save Estate"}
             </button>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
-
-function FadeImage({ src, alt, style }) {
-  const [visible, setVisible] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setVisible(true) },
-      { threshold: 0.04 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
-  return (
-    <div ref={ref} style={{ ...style, opacity: visible ? 1 : 0, transition: "opacity 0.65s ease", overflow: "hidden" }}>
-      <img src={src} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-    </div>
-  )
-}
-
-export default function PropertyPage({ property, allProperties, onBack }) {
-  const photos = property.photos?.length ? property.photos : property.hero_photo ? [property.hero_photo] : []
-  const editorialParagraphs = Array.isArray(property.editorial)
-    ? property.editorial
-    : (property.editorial || "").split(/\n\n+/).filter(Boolean)
-
-  return (
-    <div style={{ background: "#fff", color: "#0f0f0f", minHeight: "100vh" }}>
-      <style>{`
-        * { box-sizing: border-box; }
-        @keyframes heroIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
-
-      {/* ── Nav ── */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "20px 48px",
-        background: "rgba(255,255,255,0.94)", backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(0,0,0,0.06)",
-      }}>
-        <button onClick={onBack} style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontFamily: "'DM Sans', sans-serif", fontSize: 11,
-          letterSpacing: "0.22em", color: "#0f0f0f", textTransform: "uppercase",
-        }} style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 13, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500, background: "none", border: "none", cursor: "pointer" }}>THRESHOLD</button>
-        <button onClick={onBack} style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontFamily: "'DM Sans', sans-serif", fontSize: 11,
-          color: "#bbb", letterSpacing: "0.04em",
-        }}>← Collection</button>
-      </nav>
-
-      {/* ── Hero — full viewport ── */}
-      <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-        {photos[0] ? (
-          <img
-            src={photos[0]}
-            alt={property.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-          />
-        ) : (
-          <div style={{ width: "100%", height: "100%", background: "#e8e4de" }} />
-        )}
-
-        {/* Gradient: subtle at top (for nav), stronger at bottom (for text) */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, transparent 25%, transparent 45%, rgba(0,0,0,0.62) 100%)",
-        }} />
-
-        {/* Title overlay */}
-        <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          padding: "0 48px 52px",
-          display: "flex", justifyContent: "space-between", alignItems: "flex-end",
-          animation: "heroIn 0.9s ease 0.15s both",
-        }}>
-          {/* Left: name + architect */}
-          <div>
-            <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 10,
-              letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)",
-              textTransform: "uppercase", marginBottom: 10,
-            }}>
-              {property.location}
-            </div>
-            <h1 style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(30px, 3.4vw, 50px)",
-              fontWeight: 300, lineHeight: 1.05,
-              color: "#fff", margin: "0 0 9px",
-            }}>
-              {property.name}
-            </h1>
-            <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 13,
-              color: "rgba(255,255,255,0.42)", letterSpacing: "0.02em",
-            }}>
-              {property.architect}{property.year ? ` · ${property.year}` : ""}
-            </div>
+            <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "9px 24px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 500 }}>
+              Request a Tour
+            </button>
           </div>
+        </nav>
 
-          {/* Right: price + CTAs */}
-          <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 40 }}>
-            <div style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 33, fontWeight: 300,
-              color: "#fff", marginBottom: 18,
-            }}>
-              {property.price}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 48px 52px", animation: "fadeUp 0.9s ease 0.15s both" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
+            <div style={{ maxWidth: 720 }}>
+              {property.location && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "rgba(255,255,255,0.36)", textTransform: "uppercase", marginBottom: 16 }}>{property.location}</div>}
+              <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(36px, 5.5vw, 72px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.0, marginBottom: 14 }}>{property.name}</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+                {property.architect && <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.36)" }}>{property.architect}{property.year ? ` · ${property.year}` : ""}</span>}
+                {property.price && <>
+                  <span style={{ width: 1, height: 10, background: "rgba(255,255,255,0.16)", display: "inline-block" }} />
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.48)", fontWeight: 500 }}>{property.price}</span>
+                </>}
+              </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <button style={{
-                padding: "10px 26px",
-                background: "#fff", color: "#0f0f0f",
-                border: "none", borderRadius: 40,
-                fontFamily: "'DM Sans', sans-serif", fontSize: 11,
-                letterSpacing: "0.07em", cursor: "pointer",
-              }}>
-                Request a Tour
-              </button>
-              <button style={{
-                padding: "10px 26px",
-                background: "rgba(255,255,255,0.1)", color: "#fff",
-                border: "1px solid rgba(255,255,255,0.22)", borderRadius: 40,
-                fontFamily: "'DM Sans', sans-serif", fontSize: 11,
-                letterSpacing: "0.07em", cursor: "pointer",
-              }}>
-                Save Estate
+            <div style={{ flexShrink: 0, textAlign: "right" }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(255,255,255,0.22)", marginBottom: 10, lineHeight: 1.5 }}>Private materials available</p>
+              <button style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 40, padding: "9px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", color: "rgba(255,255,255,0.38)", transition: "all 0.25s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#fff" }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)"; e.currentTarget.style.color = "rgba(255,255,255,0.38)" }}>
+                Join Threshold Reserved →
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Editorial section ── */}
-      <div style={{ background: "#fff", padding: "88px 48px 80px" }}>
-        <div style={{
-          maxWidth: 1240, margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "252px 1fr",
-          gap: "0 88px",
-          alignItems: "start",
-        }}>
-
-          {/* Left: sticky metadata */}
-          <div style={{ position: "sticky", top: 88 }}>
-
-            {/* Specs */}
-            {(property.beds || property.bedrooms || property.sqft || property.baths || property.bathrooms) && (
-              <div style={{ marginBottom: 36 }}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 14,
-                  paddingBottom: 10, borderBottom: "1px solid #eeece8",
-                }}>Details</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-                  {[
-                    ["Beds", property.beds || property.bedrooms],
-                    ["Baths", property.baths || property.bathrooms],
-                    ["Size", property.sqft ? `${Number(property.sqft).toLocaleString()} sq ft` : null],
-                    ["Lot", property.lot_size],
-                  ].filter(([, v]) => v).map(([label, value]) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#ccc", letterSpacing: "0.04em" }}>{label}</span>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#888" }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Idea tags */}
-            {(property.idea_tags?.length > 0 || property.landscape_tag) && (
-              <div style={{ marginBottom: 36 }}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 14,
-                  paddingBottom: 10, borderBottom: "1px solid #eeece8",
-                }}>Themes</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {(property.idea_tags || []).map(tag => (
-                    <span key={tag} style={{
-                      fontFamily: "'DM Sans', sans-serif", fontSize: 10,
-                      letterSpacing: "0.06em", color: "#aaa",
-                      border: "1px solid #e6e2dc", borderRadius: 20,
-                      padding: "3px 11px",
-                    }}>{tag}</span>
-                  ))}
-                  {property.landscape_tag && (
-                    <span style={{
-                      fontFamily: "'DM Sans', sans-serif", fontSize: 10,
-                      letterSpacing: "0.06em", color: "#aaa",
-                      border: "1px solid #e6e2dc", borderRadius: 20,
-                      padding: "3px 11px",
-                    }}>{property.landscape_tag}</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Agent */}
-            {(property.agent?.name || property.agent_name) && (
-              <div style={{ marginBottom: 36 }}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 14,
-                  paddingBottom: 10, borderBottom: "1px solid #eeece8",
-                }}>Listed by</div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#888", lineHeight: 1.75 }}>
-                  {property.agent?.name || property.agent_name}
-                  <br />
-                  <span style={{ fontSize: 11, color: "#bbb" }}>
-                    {property.agent?.brokerage || property.agent_brokerage}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right: editorial text */}
-          <div>
-            {editorialParagraphs.map((para, i) => (
-              <p key={i} style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(20px, 1.65vw, 24px)",
-                fontWeight: 300, lineHeight: 1.88,
-                color: "#1a1a1a",
-                margin: i > 0 ? "1.6em 0 0" : "0",
-              }}>{para}</p>
-            ))}
-
-            {property.architect_context && (
-              <div style={{ marginTop: 60, paddingTop: 40, borderTop: "1px solid #eeece8" }}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 14,
-                }}>Architect</div>
-                <p style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-                  color: "#888", lineHeight: 1.9, margin: 0,
-                }}>{property.architect_context}</p>
-              </div>
-            )}
-          </div>
+        <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)" }}>
+          <div style={{ width: 1, height: 32, background: "rgba(255,255,255,0.9)", margin: "0 auto", animation: "scrollPulse 2.4s ease-in-out infinite", transformOrigin: "top" }} />
         </div>
-      </div>
+      </section>
 
-      {/* ── Photo stack ── */}
-      {photos.slice(1).map((url, i) => (
-        <div key={i}>
-          {/* Alternating aspect ratios — Leibal-style editorial pacing */}
-          {i % 4 === 1 && photos[i + 2] ? (
-            // Side-by-side pair (portrait)
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
-              <FadeImage src={url} alt={`${property.name} ${i + 2}`} style={{ width: "100%", aspectRatio: "4/5" }} />
-              <FadeImage src={photos[i + 2]} alt={`${property.name} ${i + 3}`} style={{ width: "100%", aspectRatio: "4/5" }} />
-            </div>
-          ) : i % 4 === 2 ? null /* rendered in pair above */ : (
-            <FadeImage
-              src={url}
-              alt={`${property.name} ${i + 2}`}
-              style={{ width: "100%", aspectRatio: i % 4 === 0 ? "16/9" : "3/2" }}
-            />
-          )}
-
-          {/* Site context slipped in after the second standalone photo */}
-          {i === 2 && property.site_context && (
-            <div style={{ background: "#faf9f6", padding: "80px 48px" }}>
-              <div style={{ maxWidth: 640, margin: "0 auto" }}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 14,
-                }}>Site</div>
-                <p style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-                  color: "#888", lineHeight: 1.9, margin: 0,
-                }}>{property.site_context}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Site context fallback — show here if not enough photos to place it above */}
-      {photos.slice(1).length < 3 && property.site_context && (
-        <div style={{ background: "#faf9f6", padding: "80px 48px" }}>
-          <div style={{ maxWidth: 640, margin: "0 auto" }}>
-            <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-              letterSpacing: "0.18em", color: "#d0ccc6",
-              textTransform: "uppercase", marginBottom: 14,
-            }}>Site</div>
-            <p style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-              color: "#888", lineHeight: 1.9, margin: 0,
-            }}>{property.site_context}</p>
-          </div>
+      {/* ═══ THEMES — inline whisper ══════════════════════════════════════════ */}
+      {tags.length > 0 && (
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "44px 48px 0" }}>
+          {tags.map((tag, i) => (
+            <span key={tag}>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.2)", textTransform: "uppercase" }}>{tag}</span>
+              {i < tags.length - 1 && <span style={{ margin: "0 14px", color: "rgba(255,255,255,0.1)", fontSize: 10 }}>·</span>}
+            </span>
+          ))}
         </div>
       )}
 
-      {/* ── The Pairing ── */}
-      <div style={{ padding: "88px 48px 96px", background: "#faf9f6", borderTop: "1px solid #eeece8" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          <div style={{ marginBottom: 48 }}>
-            <div style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 26, fontWeight: 300, color: "#0f0f0f", marginBottom: 5,
-            }}>The Pairing</div>
-            <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 12,
-              color: "#c0bdb8", letterSpacing: "0.03em",
-            }}>Objects that belong to this space</div>
+      {/* ═══ EDITORIAL STORY ══════════════════════════════════════════════════ */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 48px 0" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "0 72px" }}>
+
+          {/* Left: sticky metadata */}
+          <div>
+            <div style={{ position: "sticky", top: 48 }}>
+              {property.architect && (
+                <div style={{ marginBottom: 36 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Architect</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)" }}>{property.architect}</div>
+                  {property.year && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 4 }}>{property.year}</div>}
+                </div>
+              )}
+              {property.location && (
+                <div style={{ marginBottom: 36 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Location</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)", lineHeight: 1.4 }}>{property.location}</div>
+                </div>
+              )}
+              {(property.bedrooms || property.sqft) && (
+                <div style={{ marginBottom: 36 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Scale</div>
+                  {property.bedrooms && <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
+                  {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 4 }}>{Number(property.sqft).toLocaleString()} sqft</div>}
+                  {property.lot_size && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{property.lot_size}</div>}
+                </div>
+              )}
+              {property.price && (
+                <div style={{ marginBottom: 36 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Price</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "rgba(255,255,255,0.62)" }}>{property.price}</div>
+                </div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button style={{ padding: "10px 0", background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", cursor: "pointer" }}>Request a Tour</button>
+                <button onClick={() => setSaved(s => !s)} style={{ padding: "10px 0", background: "none", color: saved ? "#F7F4EC" : "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", cursor: "pointer", transition: "all 0.2s" }}>
+                  {saved ? "Saved ✦" : "Save Estate"}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0 48px" }}>
-            {[
-              { label: "Furniture", items: PAIRING.furniture },
-              { label: "Objects",   items: PAIRING.objects },
-              { label: "Materials", items: PAIRING.materials },
-              { label: "Wardrobe",  items: PAIRING.wardrobe },
-            ].map(section => (
-              <div key={section.label}>
-                <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                  letterSpacing: "0.18em", color: "#d0ccc6",
-                  textTransform: "uppercase", marginBottom: 20,
-                  paddingBottom: 10, borderBottom: "1px solid #e8e4de",
-                }}>{section.label}</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
-                  {section.items.map((item, i) => (
-                    <div key={i}>
-                      <div style={{
-                        fontFamily: "'DM Sans', sans-serif", fontSize: 9,
-                        letterSpacing: "0.1em", color: "#ccc",
-                        textTransform: "uppercase", marginBottom: 3,
-                      }}>{item.brand}</div>
-                      <div style={{
-                        fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: 16, color: "#0f0f0f",
-                        fontWeight: 400, marginBottom: 4,
-                      }}>{item.name}</div>
-                      <div style={{
-                        fontFamily: "'DM Sans', sans-serif", fontSize: 12,
-                        color: "#aaa", lineHeight: 1.6, fontStyle: "italic",
-                      }}>{item.note}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Right: editorial narrative */}
+          <div>
+            {property.significance && (
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(21px, 2vw, 27px)", fontWeight: 300, color: "rgba(255,255,255,0.82)", lineHeight: 1.58, marginBottom: 36 }}>
+                {property.significance}
+              </p>
+            )}
+            {editorialParagraphs.map((para, i) => (
+              <p key={i} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: "rgba(255,255,255,0.44)", lineHeight: 1.84, marginBottom: 22 }}>{para}</p>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Bottom spacer so AskBar doesn't cover content */}
-      <div style={{ height: 96, background: "#faf9f6" }} />
+      {/* ═══ PHOTO BREAK — full bleed ═════════════════════════════════════════ */}
+      {photos.length > 1 && (
+        <section style={{ marginTop: 80 }}>
+          <div style={{ display: "grid", gridTemplateColumns: photos.length >= 3 ? "1.4fr 1fr" : "1fr", gap: 3 }}>
+            <div style={{ height: 580, overflow: "hidden" }}>
+              <img src={photos[1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            {photos[2] && <div style={{ height: 580, overflow: "hidden" }}><img src={photos[2]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>}
+          </div>
+        </section>
+      )}
 
-      {/* ── Ask bar ── */}
-      <AskBar property={property} />
+      {/* ═══ ARCHITECT & SITE CONTEXT ═════════════════════════════════════════ */}
+      {(property.architect_context || property.site_context) && (
+        <section style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 48px 0" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "0 72px" }}>
+            <div />
+            <div>
+              {property.architect_context && (
+                <div style={{ marginBottom: 44 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 18 }}>The Architect</div>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.4)", lineHeight: 1.84 }}>{property.architect_context}</p>
+                </div>
+              )}
+              {property.site_context && (
+                <div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 18 }}>The Site</div>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.4)", lineHeight: 1.84 }}>{property.site_context}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ MORE PHOTOS ══════════════════════════════════════════════════════ */}
+      {photos.length > 3 && (
+        <section style={{ padding: "80px 48px 0" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3 }}>
+            {photos.slice(3, 6).map((photo, i) => (
+              <div key={i} style={{ height: 340, overflow: "hidden" }}>
+                <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ═══ THRESHOLD RESERVED CTA ═══════════════════════════════════════════ */}
+      <section style={{ margin: "80px 48px 0", borderRadius: 14, overflow: "hidden", position: "relative", minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {photos[1] && <img src={photos[1]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.18) saturate(0.3)", transform: "scale(1.04)" }} />}
+        <div style={{ position: "absolute", inset: 0, background: photos[1] ? "rgba(6,6,6,0.62)" : "#0e0e0e" }} />
+        <div style={{ position: "relative", textAlign: "center", padding: "64px 48px", maxWidth: 560 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.24em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 22 }}>Threshold Reserved</div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.38, marginBottom: 14 }}>
+            Access full architectural details,<br />private materials, and deeper context.
+          </h2>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.28)", marginBottom: 36, lineHeight: 1.65 }}>
+            A private membership for those who take architecture seriously.
+          </p>
+          <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "12px 36px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, letterSpacing: "0.04em" }}>
+            Join Threshold Reserved
+          </button>
+        </div>
+      </section>
+
+      {/* ═══ ASK THE HOUSE ════════════════════════════════════════════════════ */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "96px 48px 0" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "0 72px", alignItems: "start" }}>
+          <div style={{ paddingTop: 4 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Understand</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "rgba(255,255,255,0.42)", lineHeight: 1.25 }}>Ask the<br />House</div>
+          </div>
+          <div>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 17, color: "rgba(255,255,255,0.26)", lineHeight: 1.7, marginBottom: 36 }}>
+              Quiet architectural intelligence. What would you like to understand about this space?
+            </p>
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.11)", paddingBottom: 16, display: "flex", alignItems: "flex-end", gap: 20 }}>
+              <div style={{ flex: 1, position: "relative" }}>
+                {!askValue && (
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 19, color: "rgba(255,255,255,0.17)", opacity: promptVisible ? 1 : 0, transform: promptVisible ? "translateY(0)" : "translateY(-4px)", transition: "opacity 0.38s ease, transform 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {ASK_PROMPTS[promptIdx]}
+                  </div>
+                )}
+                <input
+                  value={askValue}
+                  onChange={e => setAskValue(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
+                  style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: "#fff" }}
+                />
+              </div>
+              {askValue && (
+                <button onClick={handleAsk}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", flexShrink: 0, paddingBottom: 2, transition: "color 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}>
+                  Ask →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ IN RESIDENCE ═════════════════════════════════════════════════════ */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "96px 48px 0" }}>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 72 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "0 72px" }}>
+            <div>
+              <div style={{ position: "sticky", top: 48 }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Curated</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "rgba(255,255,255,0.42)", lineHeight: 1.25 }}>In<br />Residence</div>
+              </div>
+            </div>
+            <div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 17, color: "rgba(255,255,255,0.26)", lineHeight: 1.7, marginBottom: 56 }}>
+                Objects, materials, and pieces that belong in the world of this home.
+              </p>
+              <div>
+                {displayPairings.map((item, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "68px 1fr", gap: 28, alignItems: "start", paddingBottom: i < displayPairings.length - 1 ? 48 : 0, marginBottom: i < displayPairings.length - 1 ? 48 : 0, borderBottom: i < displayPairings.length - 1 ? "1px solid rgba(255,255,255,0.055)" : "none" }}>
+                    <div style={{ width: 68, height: 68, borderRadius: 6, overflow: "hidden", background: ["#1c1c22","#1e201c","#1c201e","#201a1c"][i % 4], flexShrink: 0 }}>
+                      {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.14em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 8 }}>{item.category || PAIRING_LABELS[i % 4]}</div>
+                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, color: "rgba(255,255,255,0.72)", marginBottom: 5 }}>{item.name}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.2)", marginBottom: 12 }}>{item.designer}{item.year ? ` · ${item.year}` : ""}</div>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.36)", lineHeight: 1.72 }}>{item.reason}</p>
+                      {item.price && (
+                        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 14 }}>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)" }}>{item.price}</span>
+                          {item.url && item.url !== "#" && (
+                            <a href={item.url} target="_blank" rel="noopener noreferrer"
+                              style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.12em", color: "rgba(255,255,255,0.18)", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
+                              onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
+                              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.18)"}
+                            >View →</a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ CONTINUE EXPLORING ═══════════════════════════════════════════════ */}
+      {related.length > 0 && (
+        <section style={{ maxWidth: 1100, margin: "0 auto", padding: "96px 48px 120px" }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 72 }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 34, fontWeight: 300, color: "rgba(255,255,255,0.45)", marginBottom: 44 }}>
+              You may also be drawn to
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+              {related.map(p => <RelatedCard key={p.id} property={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
