@@ -190,12 +190,20 @@ export default function ExplorePage() {
   }
 
   const filteredProperties = properties.filter(p => {
-    if (activeThemes.length === 0) return true
-    const tags = [...(p.idea_tags || []), p.landscape_tag].filter(Boolean).map(t => t.toLowerCase())
-    return activeThemes.some(theme => {
-      const themeLabel = THEMES.find(t => t.id === theme)?.label?.toLowerCase() || ""
-      return tags.some(tag => tag.includes(themeLabel.split(" ")[0].toLowerCase()))
-    })
+    // Collection filter
+    if (p.collection && p.collection !== activeCollection.id) return false
+    // Subcategory filter
+    if (activeSubcategory && p.subcategory !== activeSubcategory.name) return false
+    // Theme filter
+    if (activeThemes.length > 0) {
+      const tags = [...(p.idea_tags || []), p.landscape_tag].filter(Boolean).map(t => t.toLowerCase())
+      const hasTheme = activeThemes.some(theme => {
+        const themeLabel = THEMES.find(t => t.id === theme)?.label?.toLowerCase() || ""
+        return tags.some(tag => tag.includes(themeLabel.split(" ")[0].toLowerCase()))
+      })
+      if (!hasTheme) return false
+    }
+    return true
   })
 
   return (

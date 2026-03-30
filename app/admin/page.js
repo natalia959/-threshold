@@ -6,10 +6,19 @@ const ADMIN_PASSWORD = "threshold2024"
 const IDEA_TAGS = ["Solitude", "Gathering", "Light as Material", "Garden as Architecture", "Indoors Dissolved", "Work and Make"]
 const LANDSCAPE_TAGS = ["Coastal", "Desert", "Mountain", "Urban", "Agricultural"]
 
+const COLLECTIONS = [
+  { id: "architectural-icons", label: "Architectural Icons", subcategories: ["Masters of Form", "Brutalist Intimacy", "Mid-Century Resolved", "Contemporary Canon"] },
+  { id: "california-modern", label: "California Modern", subcategories: ["Canyon", "Coast", "Desert Edge", "Valley Compounds"] },
+  { id: "nature-within", label: "Nature Within", subcategories: ["Forest Dwellings", "Meadow Houses", "Waterside", "Garden as Room"] },
+  { id: "spanish-revival", label: "Spanish Revival", subcategories: ["Hacienda", "Mission Style", "Mediterranean", "Contemporary Spanish"] },
+  { id: "hillside-retreats", label: "Hillside Retreats", subcategories: ["Perched", "Terraced", "Cantilevered", "Hidden in the Hill"] },
+  { id: "quiet-luxury", label: "Quiet Luxury", subcategories: ["Minimal", "Material-Led", "Wabi Sensibility", "Private Compounds"] },
+]
+
 const emptyProperty = {
   name: "", architect: "", year: "", location: "", price: "", price_value: "",
   significance: "", editorial: "", architect_context: "", site_context: "",
-  idea_tags: [], landscape_tag: "", photos: [], hero_photo: "",
+  idea_tags: [], landscape_tag: "", collection: "", subcategory: "", photos: [], hero_photo: "",
   full_address: "", agent_name: "", agent_phone: "", agent_email: "", agent_brokerage: "",
   bedrooms: "", bathrooms: "", sqft: "", lot_size: "", published: false,
 }
@@ -254,6 +263,38 @@ export default function AdminPage() {
                   {tag}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Collection */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.2em", color: "#555", textTransform: "uppercase", marginBottom: 24, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>Collection</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div>
+              <Label>Collection</Label>
+              <select
+                value={form.collection}
+                onChange={e => setForm(f => ({ ...f, collection: e.target.value, subcategory: "" }))}
+                style={{ width: "100%", boxSizing: "border-box", background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, padding: "10px 12px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 14, color: form.collection ? "#fff" : "#555", outline: "none", cursor: "pointer" }}
+              >
+                <option value="">— None —</option>
+                {COLLECTIONS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label>Subcategory</Label>
+              <select
+                value={form.subcategory}
+                onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))}
+                disabled={!form.collection}
+                style={{ width: "100%", boxSizing: "border-box", background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 2, padding: "10px 12px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 14, color: form.subcategory ? "#fff" : "#555", outline: "none", cursor: form.collection ? "pointer" : "default", opacity: form.collection ? 1 : 0.4 }}
+              >
+                <option value="">— None —</option>
+                {(COLLECTIONS.find(c => c.id === form.collection)?.subcategories || []).map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
