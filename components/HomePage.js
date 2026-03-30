@@ -185,9 +185,16 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
-          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 14, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500 }}>
-            THRESHOLD
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+            <span style={{ fontFamily: "var(--font-logo), sans-serif", fontSize: 14, letterSpacing: "0.04em", color: "#F7F4EC", fontWeight: 500 }}>
+              THRESHOLD
+            </span>
+            <a href="/explore" style={{ textDecoration: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.14em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase", transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "rgba(247,244,236,0.8)"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.4)"}>
+              Explore Collections
+            </a>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
             <button className="nav-signin" onClick={onSignIn} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: 0 }}>
               {user ? "My Portal" : "Sign In"}
@@ -311,14 +318,14 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           {/* Explore CTA */}
           {properties.length > 0 && (
             <div style={{ marginTop: 56, textAlign: "center" }}>
-              <button
-                onClick={() => onSearch("architecturally significant homes")}
-                style={{ background: "none", border: "1px solid rgba(247,244,236,0.15)", borderRadius: 40, padding: "13px 36px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.1em", color: "rgba(247,244,236,0.45)", transition: "border-color 0.2s, color 0.2s" }}
+              <a
+                href="/explore"
+                style={{ display: "inline-block", background: "none", border: "1px solid rgba(247,244,236,0.15)", borderRadius: 40, padding: "13px 36px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.1em", color: "rgba(247,244,236,0.45)", textDecoration: "none", transition: "border-color 0.2s, color 0.2s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.4)"; e.currentTarget.style.color = "rgba(247,244,236,0.8)" }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.15)"; e.currentTarget.style.color = "rgba(247,244,236,0.45)" }}
               >
-                Explore the Collection
-              </button>
+                Explore Collections
+              </a>
             </div>
           )}
         </div>
