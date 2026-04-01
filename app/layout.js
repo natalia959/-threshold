@@ -1,10 +1,18 @@
-import { Cormorant_Garamond, DM_Sans, Encode_Sans_Expanded } from "next/font/google"
+import { Cormorant_Garamond, EB_Garamond, DM_Sans, Encode_Sans_Expanded } from "next/font/google"
+import "./globals.css"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-cormorant",
+})
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-eb-garamond",
 })
 
 const dmSans = DM_Sans({
@@ -26,7 +34,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable} ${encodeSansExpanded.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${ebGaramond.variable} ${dmSans.variable} ${encodeSansExpanded.variable}`}>
       <body style={{ margin: 0, padding: 0 }}>{children}</body>
     </html>
   )

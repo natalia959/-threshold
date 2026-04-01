@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { supabase } from "../lib/supabase"
-import HomePage from "../components/HomePage"
+import LandingPage from "../components/LandingPage"
 import ResultsPage from "../components/ResultsPage"
 import SignInModal from "../components/SignInModal"
 import VerifiedModal from "../components/VerifiedModal"
@@ -124,13 +124,11 @@ export default function Page() {
           setSearchValue={setSearchValue}
         />
       ) : (
-        <HomePage
+        <LandingPage
           onSearch={handleSearch}
           onSignUp={() => setShowApply(true)}
           onSignIn={() => setShowSignIn(true)}
           user={user}
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
         />
       )}
 
