@@ -1,52 +1,5 @@
 @import "tailwindcss";
 
-/* ── GT Super Display ──────────────────────────────────────────── */
-@font-face {
-  font-family: 'GT Super Display';
-  src: url('/fonts/GTSuperDisplay-Regular.woff2') format('woff2'),
-       url('/fonts/GTSuperDisplay-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'GT Super Display';
-  src: url('/fonts/GTSuperDisplay-RegularItalic.woff2') format('woff2'),
-       url('/fonts/GTSuperDisplay-RegularItalic.woff') format('woff');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'GT Super Display';
-  src: url('/fonts/GTSuperDisplay-Medium.woff2') format('woff2'),
-       url('/fonts/GTSuperDisplay-Medium.woff') format('woff');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* ── Favorit ───────────────────────────────────────────────────── */
-@font-face {
-  font-family: 'Favorit';
-  src: url('/fonts/Favorit-Light.woff2') format('woff2'),
-       url('/fonts/Favorit-Light.woff') format('woff');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Favorit';
-  src: url('/fonts/Favorit-Regular.woff2') format('woff2'),
-       url('/fonts/Favorit-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 *, *::before, *::after {
   box-sizing: border-box;
 }
