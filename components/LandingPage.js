@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
@@ -7,11 +7,11 @@ const serif = "var(--font-eb-garamond), 'EB Garamond', Georgia, serif"
 const sans  = "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif"
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const BG     = "#FFFFFF"
-const INK    = "#0A0A0A"
-const MUTED  = "#888880"
-const FAINT  = "#BBBBBB"
-const BORDER = "rgba(0,0,0,0.08)"
+const BG      = "#151412"
+const INK     = "#F0EBE1"
+const MUTED   = "rgba(240,235,225,0.45)"
+const WHISPER = "rgba(240,235,225,0.22)"
+const BORDER  = "rgba(240,235,225,0.09)"
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 const MAX = "1200px"
@@ -28,17 +28,56 @@ const PLACEHOLDERS = [
   "the vision of a perfect Sunday morning...",
 ]
 
-// ── In Residence items (Stahl House) ─────────────────────────────────────────
+// ── In Residence items — each with a distinct placeholder gradient ─────────────
 const RESIDENCE_ITEMS = [
-  { category: "Automobile", name: "Porsche 911 Targa, 1973" },
-  { category: "Seating",    name: "Prouvé Standard Chair, 1934" },
-  { category: "Lighting",   name: "Noguchi Akari 55A" },
-  { category: "Object",     name: "Brancusi-inspired sculpture" },
-  { category: "Textile",    name: "Loro Piana cashmere, undyed" },
-  { category: "Glassware",  name: "Lobmeyr Series B" },
-  { category: "Scent",      name: "Cire Trudon Ernesto" },
-  { category: "Surface",    name: "Nero Marquina, honed" },
+  {
+    category: "Automobile",
+    name: "Porsche 911 Targa, 1973",
+    gradient: "radial-gradient(ellipse at 60% 40%, #2a1f0e 0%, #0f0c08 100%)",
+  },
+  {
+    category: "Seating",
+    name: "Prouvé Standard Chair, 1934",
+    gradient: "radial-gradient(ellipse at 40% 60%, #1a1e22 0%, #0c0e10 100%)",
+  },
+  {
+    category: "Lighting",
+    name: "Noguchi Akari 55A",
+    gradient: "radial-gradient(ellipse at 50% 30%, #2e2618 0%, #141210 100%)",
+  },
+  {
+    category: "Object",
+    name: "Brancusi-inspired sculpture",
+    gradient: "radial-gradient(ellipse at 35% 55%, #1c1a18 0%, #0d0c0b 100%)",
+  },
+  {
+    category: "Textile",
+    name: "Loro Piana cashmere, undyed",
+    gradient: "radial-gradient(ellipse at 60% 50%, #221e18 0%, #100e0c 100%)",
+  },
+  {
+    category: "Glassware",
+    name: "Lobmeyr Series B",
+    gradient: "radial-gradient(ellipse at 45% 35%, #161a1e 0%, #0a0c0e 100%)",
+  },
+  {
+    category: "Scent",
+    name: "Cire Trudon Ernesto",
+    gradient: "radial-gradient(ellipse at 55% 60%, #201812 0%, #0e0b09 100%)",
+  },
+  {
+    category: "Surface",
+    name: "Nero Marquina, honed",
+    gradient: "radial-gradient(ellipse at 40% 40%, #18181a 0%, #0a0a0c 100%)",
+  },
 ]
+
+// ── Hero placeholder — suggests a dramatic architectural interior ──────────────
+const HERO_BG = `
+  radial-gradient(ellipse at 30% 60%, rgba(52,40,28,0.9) 0%, transparent 55%),
+  radial-gradient(ellipse at 80% 20%, rgba(30,26,20,0.8) 0%, transparent 50%),
+  linear-gradient(170deg, #1e1a14 0%, #0e0c0a 60%, #080706 100%)
+`.trim()
 
 // ═══════════════════════════════════════════════════════════════════
 // ANNOUNCEMENT BAR
@@ -55,12 +94,12 @@ function AnnouncementBar() {
         paddingRight: PAD,
       }}
     >
-      <span style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, color: MUTED, letterSpacing: "0.06em" }}>
+      <span style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, color: WHISPER, letterSpacing: "0.06em" }}>
         Now featuring estates in Los Angeles, Malibu, and the Bay Area
       </span>
       <Link
         href="/reserve"
-        style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, color: MUTED, letterSpacing: "0.06em", textDecoration: "underline", textUnderlineOffset: 3 }}
+        style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, color: WHISPER, letterSpacing: "0.06em", textDecoration: "underline", textUnderlineOffset: 3, textDecorationColor: BORDER }}
       >
         Apply to Reserve →
       </Link>
@@ -90,13 +129,13 @@ function Nav() {
       <div className="flex items-center" style={{ gap: "2rem" }}>
         <Link
           href="/explore"
-          style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, textTransform: "uppercase", letterSpacing: "0.1em", color: INK, textDecoration: "none" }}
+          style={{ fontFamily: sans, fontSize: 11, fontWeight: 300, textTransform: "uppercase", letterSpacing: "0.1em", color: MUTED, textDecoration: "none" }}
         >
           Explore
         </Link>
         <Link
           href="/reserve"
-          style={{ fontFamily: serif, fontStyle: "italic", fontSize: 15, color: INK, textDecoration: "none" }}
+          style={{ fontFamily: serif, fontStyle: "italic", fontSize: 15, color: MUTED, textDecoration: "none" }}
         >
           Reserve
         </Link>
@@ -109,10 +148,10 @@ function Nav() {
 // HERO
 // ═══════════════════════════════════════════════════════════════════
 function HeroSection({ onSearch }) {
-  const [value, setValue]                     = useState("")
-  const [placeholderIdx, setPlaceholderIdx]   = useState(0)
+  const [value, setValue]                           = useState("")
+  const [placeholderIdx, setPlaceholderIdx]         = useState(0)
   const [placeholderVisible, setPlaceholderVisible] = useState(true)
-  const [focused, setFocused]                 = useState(false)
+  const [focused, setFocused]                       = useState(false)
 
   useEffect(() => {
     if (focused) return
@@ -129,33 +168,34 @@ function HeroSection({ onSearch }) {
   const handleSubmit = () => { if (value.trim()) onSearch(value.trim()) }
 
   return (
-    <section
-      style={{
-        position: "relative",
-        height: "100vh",
-        background: "linear-gradient(160deg, #E8E0D5 0%, #D4C9BC 100%)",
-      }}
-    >
-      {/* Layer 1 — headline, top-left, 35% from top */}
-      <div
-        style={{
-          position: "absolute",
-          top: "35%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "100%",
-          maxWidth: MAX,
-          paddingLeft: PAD,
-          paddingRight: PAD,
-        }}
-      >
+    <section style={{ position: "relative", height: "100vh", background: HERO_BG }}>
+
+      {/* Subtle vignette overlay */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, transparent 40%, rgba(0,0,0,0.55) 100%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Layer 1 — headline at 35% */}
+      <div style={{
+        position: "absolute",
+        top: "35%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "100%",
+        maxWidth: MAX,
+        paddingLeft: PAD,
+        paddingRight: PAD,
+      }}>
         <div style={{ maxWidth: 680 }}>
           <p style={{
             fontFamily: serif,
             fontSize: 13,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.7)",
+            color: "rgba(240,235,225,0.55)",
             margin: 0,
             fontWeight: 400,
           }}>
@@ -166,7 +206,7 @@ function HeroSection({ onSearch }) {
             fontSize: "clamp(42px, 6vw, 72px)",
             fontWeight: 400,
             fontStyle: "normal",
-            color: "#fff",
+            color: INK,
             lineHeight: 1.05,
             marginTop: "0.5rem",
             marginBottom: 0,
@@ -177,47 +217,42 @@ function HeroSection({ onSearch }) {
         </div>
       </div>
 
-      {/* Layer 2 — frosted glass search bar, flush to bottom */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          minHeight: 140,
-          background: "rgba(255,255,255,0.12)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          borderTop: "0.5px solid rgba(255,255,255,0.2)",
-          display: "flex",
-          alignItems: "flex-start",
-          paddingTop: "1.75rem",
-          paddingBottom: "1.75rem",
-          paddingLeft: PAD,
-          paddingRight: PAD,
-          gap: "2rem",
-        }}
-      >
+      {/* Layer 2 — frosted glass search bar */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        minHeight: 140,
+        background: "rgba(21,20,18,0.55)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderTop: `0.5px solid rgba(240,235,225,0.12)`,
+        display: "flex",
+        alignItems: "flex-start",
+        paddingTop: "1.75rem",
+        paddingBottom: "1.75rem",
+        paddingLeft: PAD,
+        paddingRight: PAD,
+        gap: "2rem",
+      }}>
         {/* Input column */}
         <div style={{ flex: 1, position: "relative" }}>
-          {/* Animated placeholder */}
           {!focused && !value && (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                pointerEvents: "none",
-                fontFamily: serif,
-                fontStyle: "italic",
-                fontSize: 18,
-                color: "rgba(255,255,255,0.6)",
-                lineHeight: 1.5,
-                opacity: placeholderVisible ? 1 : 0,
-                transition: "opacity 0.6s ease",
-              }}
-            >
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              pointerEvents: "none",
+              fontFamily: serif,
+              fontStyle: "italic",
+              fontSize: 18,
+              color: "rgba(240,235,225,0.38)",
+              lineHeight: 1.5,
+              opacity: placeholderVisible ? 1 : 0,
+              transition: "opacity 0.6s ease",
+            }}>
               {PLACEHOLDERS[placeholderIdx]}
             </div>
           )}
@@ -238,7 +273,7 @@ function HeroSection({ onSearch }) {
               fontFamily: serif,
               fontStyle: "italic",
               fontSize: 18,
-              color: "#fff",
+              color: INK,
               lineHeight: 1.5,
               display: "block",
             }}
@@ -248,7 +283,7 @@ function HeroSection({ onSearch }) {
             fontFamily: sans,
             fontWeight: 300,
             fontSize: 11,
-            color: "rgba(255,255,255,0.45)",
+            color: WHISPER,
             letterSpacing: "0.08em",
             margin: "0.5rem 0 0 0",
           }}>
@@ -256,14 +291,13 @@ function HeroSection({ onSearch }) {
           </p>
         </div>
 
-        {/* Search button */}
         <button
           onClick={handleSubmit}
           style={{
             fontFamily: sans,
             fontWeight: 300,
             fontSize: 11,
-            color: "rgba(255,255,255,0.7)",
+            color: MUTED,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             background: "none",
@@ -303,7 +337,6 @@ function BodyCopySection() {
   return (
     <section style={{ background: BG, padding: `6rem ${PAD}` }}>
       <div style={{ maxWidth: MAX, margin: "0 auto" }}>
-        {/* Main copy */}
         <p style={{
           fontFamily: serif,
           fontStyle: "italic",
@@ -318,19 +351,12 @@ function BodyCopySection() {
           Threshold is a space crafted for the world's most singular architectural estates. Search the way you think — every detail brings you closer.
         </p>
 
-        {/* Three columns */}
-        <div
-          style={{
-            marginTop: "3rem",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-          }}
-        >
+        <div style={{ marginTop: "3rem", display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
           {THREE_COLS.map((col, i) => (
             <div
               key={col.label}
               style={{
-                padding: `0 ${i === 0 ? "2rem 0 0" : "2rem"}`,
+                padding: i === 0 ? "0 2rem 0 0" : "0 2rem",
                 borderLeft: i > 0 ? `0.5px solid ${BORDER}` : "none",
               }}
             >
@@ -340,7 +366,7 @@ function BodyCopySection() {
                 fontWeight: 400,
                 textTransform: "uppercase",
                 letterSpacing: "0.14em",
-                color: FAINT,
+                color: WHISPER,
                 margin: "0 0 0.75rem 0",
               }}>
                 {col.label}
@@ -350,8 +376,8 @@ function BodyCopySection() {
                 fontStyle: "italic",
                 fontSize: 16,
                 fontWeight: 400,
-                color: INK,
-                lineHeight: 1.5,
+                color: MUTED,
+                lineHeight: 1.6,
                 margin: 0,
               }}>
                 {col.copy}
@@ -369,21 +395,31 @@ function BodyCopySection() {
 // ═══════════════════════════════════════════════════════════════════
 function ResidenceCard({ item }) {
   return (
-    <div style={{ background: "#F5F3F0", borderRadius: 8, padding: "1.25rem" }}>
+    <div style={{ background: "rgba(240,235,225,0.03)", borderRadius: 6, padding: "1rem" }}>
+      {/* Placeholder image */}
       <div style={{
         width: "100%",
         aspectRatio: "4/3",
-        background: "#E8E4E0",
+        background: item.gradient,
         borderRadius: 4,
-        marginBottom: "0.75rem",
-      }} />
+        marginBottom: "0.85rem",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        {/* Subtle inner highlight to suggest depth */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(135deg, rgba(240,235,225,0.04) 0%, transparent 60%)",
+        }} />
+      </div>
       <span style={{
         fontFamily: sans,
         fontWeight: 300,
         fontSize: 10,
         textTransform: "uppercase",
         letterSpacing: "0.12em",
-        color: FAINT,
+        color: WHISPER,
       }}>
         {item.category}
       </span>
@@ -412,7 +448,7 @@ function InResidenceSection() {
           fontWeight: 400,
           textTransform: "uppercase",
           letterSpacing: "0.14em",
-          color: FAINT,
+          color: WHISPER,
           margin: 0,
         }}>
           In Residence
@@ -442,14 +478,12 @@ function InResidenceSection() {
           Objects, furniture, art, and atmosphere chosen for this property and no other. Not what could work here — what belongs here.
         </p>
 
-        <div
-          style={{
-            marginTop: "3rem",
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 12,
-          }}
-        >
+        <div style={{
+          marginTop: "3rem",
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 10,
+        }}>
           {RESIDENCE_ITEMS.map((item, i) => <ResidenceCard key={i} item={item} />)}
         </div>
       </div>
@@ -471,7 +505,7 @@ function ReserveWhisper() {
         <p style={{ fontFamily: serif, fontStyle: "italic", fontSize: 22, fontWeight: 400, color: INK, margin: 0 }}>
           Threshold Reserve
         </p>
-        <p style={{ fontFamily: sans, fontSize: 13, color: FAINT, margin: "0.5rem 0 0 0" }}>
+        <p style={{ fontFamily: sans, fontSize: 13, color: WHISPER, margin: "0.5rem 0 0 0" }}>
           →
         </p>
       </Link>
@@ -485,7 +519,7 @@ function ReserveWhisper() {
 function Footer() {
   return (
     <footer style={{ borderTop: `0.5px solid ${BORDER}`, padding: "2rem", textAlign: "center" }}>
-      <span style={{ fontFamily: sans, fontWeight: 300, fontSize: 11, color: FAINT, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+      <span style={{ fontFamily: sans, fontWeight: 300, fontSize: 11, color: WHISPER, letterSpacing: "0.1em", textTransform: "uppercase" }}>
         threshold.estate
       </span>
     </footer>
