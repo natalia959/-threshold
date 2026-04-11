@@ -375,7 +375,7 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
           </div>
 
           {/* RIGHT — In Residence objects */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+          <div style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 40 }}>
             {displayPairings.map((item, i) => (
               <div key={i}>
                 {/* Object image */}
