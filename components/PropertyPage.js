@@ -322,8 +322,8 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
       </section>
 
       {/* ═══ THREE-COLUMN: ASK | GALLERY | IN RESIDENCE ══════════════════════ */}
-      <section style={{ maxWidth: 1200, margin: "80px auto 0", padding: "0 48px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 220px", gap: "0 40px", alignItems: "start" }}>
+      <section style={{ margin: "80px 0 0", padding: "0 40px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 240px", gap: "0 40px", alignItems: "start" }}>
 
           {/* LEFT — Ask the House, sticky */}
           <div style={{ position: "sticky", top: 80 }}>
