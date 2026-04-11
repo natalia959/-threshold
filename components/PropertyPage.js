@@ -323,7 +323,7 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
 
       {/* ═══ THREE-COLUMN: ASK | GALLERY | IN RESIDENCE ══════════════════════ */}
       <section style={{ maxWidth: 1200, margin: "80px auto 0", padding: "0 48px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 260px", gap: "0 48px", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 220px", gap: "0 40px", alignItems: "start" }}>
 
           {/* LEFT — Ask the House, sticky */}
           <div style={{ position: "sticky", top: 80 }}>
@@ -364,13 +364,13 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
           </div>
 
           {/* CENTER — Gallery photos stacked */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             {galleryPhotos.map((photo, i) =>
               photo
                 ? <div key={i} style={{ width: "100%", overflow: "hidden" }}>
-                    <img src={photo} alt="" style={{ width: "100%", display: "block", aspectRatio: "4/3", objectFit: "cover" }} />
+                    <img src={photo} alt="" style={{ width: "100%", display: "block", aspectRatio: "3/2", objectFit: "cover" }} />
                   </div>
-                : <div key={i} style={{ width: "100%", aspectRatio: "4/3", background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
+                : <div key={i} style={{ width: "100%", aspectRatio: "3/2", background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
             )}
           </div>
 
