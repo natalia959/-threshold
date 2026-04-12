@@ -360,7 +360,7 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
 
       {/* ═══ THREE-COLUMN: INSIGHT | GALLERY | IN RESIDENCE ═════════════════ */}
       <section style={{ margin: "80px 0 0", padding: "0 16px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 275px", gap: "0 40px", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "275px 1fr 275px", gap: "0 40px", alignItems: "start" }}>
 
           {/* LEFT — Animated insight + Ask the House */}
           <div style={{ position: "sticky", top: 80 }}>
