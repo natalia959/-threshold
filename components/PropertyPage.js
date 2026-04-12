@@ -281,7 +281,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Location */}
           {property.location && (
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 16 }}>{property.location}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.42)", textTransform: "uppercase", marginBottom: 16 }}>{property.location}</div>
           )}
 
           {/* Name */}
@@ -289,7 +289,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Architect · Year */}
           {property.architect && (
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.26)", marginBottom: 6 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.48)", marginBottom: 6 }}>
               {property.architect}{property.year ? ` · ${property.year}` : ""}
             </div>
           )}
@@ -302,8 +302,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {/* Scale */}
           {(property.bedrooms || property.sqft) && (
             <div style={{ marginBottom: 24 }}>
-              {property.bedrooms && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.22)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
-              {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 12 }}>{Number(property.sqft).toLocaleString()} sqft{property.lot_size ? ` · ${property.lot_size}` : ""}</div>}
+              {property.bedrooms && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.44)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
+              {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.36)", marginTop: 12 }}>{Number(property.sqft).toLocaleString()} sqft{property.lot_size ? ` · ${property.lot_size}` : ""}</div>}
             </div>
           )}
 
@@ -311,7 +311,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {tags.length > 0 && (
             <div style={{ marginBottom: 36, display: "flex", flexWrap: "wrap", gap: "5px 12px" }}>
               {tags.map(tag => (
-                <span key={tag} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.13em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase" }}>{tag}</span>
+                <span key={tag} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.13em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase" }}>{tag}</span>
               ))}
             </div>
           )}
@@ -320,29 +320,29 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Significance */}
           {property.significance && (
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.62)", lineHeight: 1.62, marginBottom: 24 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 400, color: "rgba(255,255,255,0.72)", lineHeight: 1.65, marginBottom: 24 }}>
               {property.significance}
             </p>
           )}
 
           {/* Editorial */}
           {editorialParagraphs.map((para, i) => (
-            <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.34)", lineHeight: 1.78, marginBottom: 14 }}>{para}</p>
+            <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.52)", lineHeight: 1.78, marginBottom: 14 }}>{para}</p>
           ))}
 
           {/* Architect context */}
           {property.architect_context && (
             <div style={{ marginTop: 32 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Architect</div>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.78 }}>{property.architect_context}</p>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 12 }}>The Architect</div>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.78 }}>{property.architect_context}</p>
             </div>
           )}
 
           {/* Site context */}
           {property.site_context && (
             <div style={{ marginTop: 24 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Site</div>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.78 }}>{property.site_context}</p>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 12 }}>The Site</div>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.78 }}>{property.site_context}</p>
             </div>
           )}
 
@@ -352,10 +352,10 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Why this house — streaming typewriter */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase", marginBottom: 12 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
               Why this house
             </div>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.46)", lineHeight: 1.72 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.60)", lineHeight: 1.72 }}>
               {displayedInsight}
               {displayedInsight.length < insight.length && insight && (
                 <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.38)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
@@ -380,7 +380,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginBottom: 22 }} />
 
           {/* Ask the House */}
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase", marginBottom: 12 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
             Ask the House
           </div>
           <div style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 10, position: "relative", marginBottom: 10 }}>
