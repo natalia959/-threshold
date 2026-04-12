@@ -301,7 +301,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {(property.bedrooms || property.sqft) && (
             <div style={{ marginBottom: 24 }}>
               {property.bedrooms && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.22)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
-              {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 3 }}>{Number(property.sqft).toLocaleString()} sqft{property.lot_size ? ` · ${property.lot_size}` : ""}</div>}
+              {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 12 }}>{Number(property.sqft).toLocaleString()} sqft{property.lot_size ? ` · ${property.lot_size}` : ""}</div>}
             </div>
           )}
 
@@ -421,7 +421,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {/* Gallery */}
           {galleryPhotos.map((photo, i) =>
             photo
-              ? <img key={i} src={photo} alt="" style={{ width: "100%", display: "block", height: "auto", marginTop: 3 }} />
+              ? <img key={i} src={photo} alt="" style={{ width: "100%", display: "block", height: "auto", marginTop: 12 }} />
               : <div key={i} style={{ width: "100%", aspectRatio: "3/2", marginTop: 3, background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
           )}
         </div>
