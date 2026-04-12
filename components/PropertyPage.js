@@ -253,7 +253,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         padding: "0 40px", height: 52,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 22, width: "auto", display: "block" }} />
+          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 29, width: "auto", display: "block" }} />
           <button
             onClick={onBack || (() => window.history.back())}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", transition: "color 0.2s" }}

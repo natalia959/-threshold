@@ -123,7 +123,7 @@ function Nav() {
         paddingRight: PAD,
       }}
     >
-      <img src="/threshold-logo.png" alt="Threshold" style={{ height: 24, width: "auto", display: "block" }} />
+      <img src="/threshold-logo.png" alt="Threshold" style={{ height: 31, width: "auto", display: "block" }} />
       <div className="flex items-center" style={{ gap: "2rem" }}>
         <Link
           href="/explore"
