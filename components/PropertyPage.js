@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 const ASK_PROMPTS = [
   "What's the flooring material in the living room?",
@@ -114,6 +114,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const [displayedInsight, setDisplayedInsight] = useState("")
   const [insightDone, setInsightDone]   = useState(false)
   const [followUp, setFollowUp]         = useState("")
+  const [insightStarted, setInsightStarted] = useState(false)
+  const sentinelRef = useRef(null)
 
   useEffect(() => {
     if (askFocused) return
@@ -146,9 +148,25 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
     return () => clearTimeout(t)
   }, [insight, displayedInsight])
 
+  // IntersectionObserver: fire insightStarted when sentinel scrolls above nav
+  useEffect(() => {
+    if (!sentinelRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          setInsightStarted(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "-52px 0px 0px 0px", threshold: 0 }
+    )
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   // Auto-stream: why this house, then a follow-up question
   useEffect(() => {
-    if (!property?.id) return
+    if (!property?.id || !insightStarted) return
     setInsight("")
     setDisplayedInsight("")
     setFollowUp("")
@@ -180,7 +198,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       setFollowUp(q)
       setInsightDone(true)
     }).catch(() => {})
-  }, [property?.id])
+  }, [property?.id, insightStarted])
 
   const handleAsk = async () => {
     const q = askValue.trim()
@@ -354,6 +372,9 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
               <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.78 }}>{property.site_context}</p>
             </div>
           )}
+
+          {/* Sentinel: fires insightStarted when scrolled past nav */}
+          <div ref={sentinelRef} style={{ height: 0 }} />
 
           {/* Sticky block: insight + ask + CTA */}
           <div style={{ position: "sticky", top: 52 }}>
