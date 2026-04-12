@@ -36,16 +36,21 @@ function Input({ value, onChange, placeholder, type = "text", multiline, rows = 
   return <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={style} />
 }
 
+const emptyObject = { name: "", designer: "", year: "", category: "", image: "", url: "", price: "", tags: [] }
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
   const [password, setPassword] = useState("")
   const [properties, setProperties] = useState([])
-  const [view, setView] = useState("list") // list | edit | new
+  const [view, setView] = useState("list") // list | edit | objects | object-edit
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(emptyProperty)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState("")
+  const [objects, setObjects] = useState([])
+  const [objForm, setObjForm] = useState(emptyObject)
+  const [editingObj, setEditingObj] = useState(null)
 
   const headers = { "Content-Type": "application/json", "x-admin-password": ADMIN_PASSWORD }
 
@@ -55,7 +60,43 @@ export default function AdminPage() {
     setProperties(Array.isArray(data) ? data : [])
   }
 
-  useEffect(() => { if (authed) load() }, [authed])
+  useEffect(() => { if (authed) { load(); loadObjects() } }, [authed])
+
+  const loadObjects = async () => {
+    const res = await fetch("/api/admin/objects", { headers })
+    const data = await res.json()
+    setObjects(Array.isArray(data) ? data : [])
+  }
+
+  const handleSaveObject = async () => {
+    setSaving(true)
+    const method = editingObj ? "PUT" : "POST"
+    const body = editingObj ? { ...objForm, id: editingObj } : objForm
+    const res = await fetch("/api/admin/objects", { method, headers, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (data.error) { setMsg("Error: " + data.error) }
+    else { setMsg("Saved!"); loadObjects(); setView("objects"); setObjForm(emptyObject); setEditingObj(null) }
+    setSaving(false)
+    setTimeout(() => setMsg(""), 3000)
+  }
+
+  const handleDeleteObject = async (id) => {
+    if (!confirm("Remove this object from the library?")) return
+    await fetch(`/api/admin/objects?id=${id}`, { method: "DELETE", headers })
+    loadObjects()
+  }
+
+  const handleObjImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    const fd = new FormData()
+    fd.append("file", file)
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd })
+    const data = await res.json()
+    if (data.url) setObjForm(f => ({ ...f, image: data.url }))
+    setUploading(false)
+  }
 
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
 
@@ -188,6 +229,7 @@ export default function AdminPage() {
         <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 28 }}>Properties</div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           {msg && <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#c9a96e" }}>{msg}</span>}
+          <button onClick={() => setView("objects")} style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#aaa", cursor: "pointer" }}>Objects Library</button>
           <button onClick={handleNew} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, cursor: "pointer" }}>+ New Property</button>
           <a href="/" style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#555", textDecoration: "none" }}>← Site</a>
         </div>
@@ -234,6 +276,104 @@ export default function AdminPage() {
             </tbody>
           </table>
         )}
+      </div>
+    </div>
+  )
+
+  // Objects Library
+  if (view === "objects") return (
+    <div style={{ minHeight: "100vh", background: "#0c0c0c", color: "#fff" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 48px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 28 }}>Objects Library <span style={{ fontSize: 16, color: "#555" }}>({objects.length})</span></div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {msg && <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#c9a96e" }}>{msg}</span>}
+          <button onClick={() => { setObjForm(emptyObject); setEditingObj(null); setView("object-edit") }} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add Object</button>
+          <button onClick={() => setView("list")} style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#555", background: "none", border: "none", cursor: "pointer" }}>← Properties</button>
+        </div>
+      </div>
+      <div style={{ padding: "40px 48px" }}>
+        {objects.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 0", fontFamily: "var(--font-cormorant), serif", fontSize: 24, color: "rgba(255,255,255,0.2)" }}>
+            No objects yet. Add your first piece.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 20 }}>
+            {objects.map(obj => (
+              <div key={obj.id} style={{ background: "#111", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, overflow: "hidden" }}>
+                <div style={{ aspectRatio: "3/4", background: "#1a1a1a", overflow: "hidden" }}>
+                  {obj.image
+                    ? <img src={obj.image} alt={obj.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, color: "#333" }}>No image</span>
+                      </div>
+                  }
+                </div>
+                <div style={{ padding: "12px 14px 14px" }}>
+                  {obj.category && <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.12em", color: "#555", textTransform: "uppercase", marginBottom: 4 }}>{obj.category}</div>}
+                  <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 16, color: "#fff", lineHeight: 1.2, marginBottom: 2 }}>{obj.name}</div>
+                  {obj.designer && <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#555", marginBottom: 10 }}>{obj.designer}{obj.year ? ` · ${obj.year}` : ""}</div>}
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => { setObjForm({ ...emptyObject, ...obj, tags: obj.tags || [] }); setEditingObj(obj.id); setView("object-edit") }} style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#fff", cursor: "pointer", padding: 0 }}>Edit</button>
+                    <button onClick={() => handleDeleteObject(obj.id)} style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#e05555", cursor: "pointer", padding: 0 }}>Remove</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  // Object edit form
+  if (view === "object-edit") return (
+    <div style={{ minHeight: "100vh", background: "#0c0c0c", color: "#fff" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 48px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 28 }}>{editingObj ? "Edit Object" : "New Object"}</div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {msg && <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: msg.startsWith("Error") ? "#e05555" : "#c9a96e" }}>{msg}</span>}
+          <button onClick={handleSaveObject} disabled={saving} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "10px 28px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, cursor: "pointer" }}>{saving ? "Saving…" : "Save"}</button>
+          <button onClick={() => setView("objects")} style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#555", background: "none", border: "none", cursor: "pointer" }}>Cancel</button>
+        </div>
+      </div>
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 48px 120px" }}>
+        <div style={{ display: "flex", gap: 32, marginBottom: 32 }}>
+          {/* Image upload */}
+          <label style={{ flexShrink: 0, width: 140, aspectRatio: "3/4", borderRadius: 4, overflow: "hidden", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", border: "1px dashed rgba(255,255,255,0.12)", position: "relative" }}>
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleObjImageUpload} />
+            {objForm.image
+              ? <img src={objForm.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#444", textAlign: "center", lineHeight: 1.6 }}>Click to<br />upload image</span>
+            }
+            {uploading && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#fff" }}>Uploading…</div>}
+          </label>
+          {/* Core fields */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+            <div><Label>Object Name *</Label><Input value={objForm.name} onChange={e => setObjForm(f => ({ ...f, name: e.target.value }))} placeholder="Eames Lounge Chair" /></div>
+            <div><Label>Designer</Label><Input value={objForm.designer} onChange={e => setObjForm(f => ({ ...f, designer: e.target.value }))} placeholder="Charles & Ray Eames" /></div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div><Label>Year</Label><Input value={objForm.year} onChange={e => setObjForm(f => ({ ...f, year: e.target.value }))} placeholder="1956" /></div>
+              <div><Label>Category</Label><Input value={objForm.category} onChange={e => setObjForm(f => ({ ...f, category: e.target.value }))} placeholder="Seating" /></div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div><Label>Price</Label><Input value={objForm.price} onChange={e => setObjForm(f => ({ ...f, price: e.target.value }))} placeholder="from $5,500" /></div>
+            <div><Label>Purchase URL</Label><Input value={objForm.url} onChange={e => setObjForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." /></div>
+          </div>
+          <div>
+            <Label>Tags (comma-separated)</Label>
+            <Input
+              value={(objForm.tags || []).join(", ")}
+              onChange={e => setObjForm(f => ({ ...f, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) }))}
+              placeholder="minimal, warm, mid-century, japanese, brutalist"
+            />
+            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, color: "#444", marginTop: 6 }}>
+              Tags help the AI match objects to houses and search queries
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -131,7 +131,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       setPairings(property.in_residence)
       return
     }
-    fetch("/api/furniture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property }) })
+    fetch("/api/furniture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property, searchQuery }) })
       .then(r => r.json())
       .then(d => { if (Array.isArray(d?.suggestions) && d.suggestions.length) setPairings(d.suggestions) })
       .catch(() => {})
