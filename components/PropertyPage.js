@@ -247,7 +247,9 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "#131313",
+        background: "rgba(19,19,19,0.72)",
+        backdropFilter: "blur(20px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.4)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 40px", height: 52,
       }}>
