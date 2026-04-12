@@ -344,6 +344,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             </div>
           )}
 
+          {/* Sticky block: insight + ask + CTA */}
+          <div style={{ position: "sticky", top: 52 }}>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "44px 0 32px" }} />
 
           {/* Why this house — streaming typewriter */}
@@ -409,6 +411,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
               {saved ? "Saved ✦" : "Save Estate"}
             </button>
           </div>
+          </div>{/* end sticky block */}
         </div>
 
         {/* CENTER ─ hero image then gallery, scrolls with page */}
