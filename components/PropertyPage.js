@@ -272,7 +272,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       </nav>
 
       {/* ═══ MAIN 3-COLUMN ═══════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 130px", alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 156px", alignItems: "start" }}>
 
         {/* LEFT ─ all text, scrolls with page */}
         <div style={{ padding: "52px 36px 100px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
@@ -434,28 +434,39 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           borderLeft: "1px solid rgba(255,255,255,0.05)",
         }}>
           {displayPairings.map((item, i) => (
-            <div key={i}>
+            <div key={i} style={{ position: "relative", overflow: "hidden" }}
+              onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
+              onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
+            >
               {/* Thumbnail */}
               <div style={{ width: "100%", aspectRatio: "1/1", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
                 {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
-              {/* Info below thumbnail */}
-              <div style={{ padding: "8px 10px 12px" }}>
+              {/* Hover overlay */}
+              <div className="obj-overlay" style={{
+                position: "absolute", inset: 0,
+                background: "rgba(10,9,8,0.88)",
+                backdropFilter: "blur(4px)",
+                opacity: 0,
+                transition: "opacity 0.22s ease",
+                display: "flex", flexDirection: "column", justifyContent: "flex-end",
+                padding: "10px 10px 12px",
+              }}>
                 {item.designer && (
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.12em", color: "rgba(255,255,255,0.18)", textTransform: "uppercase", marginBottom: 2 }}>{item.designer}</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.12em", color: "rgba(255,255,255,0.32)", textTransform: "uppercase", marginBottom: 2 }}>{item.designer}</div>
                 )}
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.2, marginBottom: 3 }}>{item.name}</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 1.2, marginBottom: 3 }}>{item.name}</div>
                 {item.reason && (
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 10, color: "rgba(255,255,255,0.2)", lineHeight: 1.5, marginBottom: 4 }}>{item.reason}</p>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 10, color: "rgba(255,255,255,0.42)", lineHeight: 1.5, marginBottom: 5 }}>{item.reason}</p>
                 )}
                 {item.price && (
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, color: "rgba(255,255,255,0.18)" }}>{item.price}</span>
+                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, color: "rgba(255,255,255,0.32)" }}>{item.price}</span>
                     {item.url && item.url !== "#" && (
                       <a href={item.url} target="_blank" rel="noopener noreferrer"
-                        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.1em", color: "rgba(255,255,255,0.16)", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
-                        onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
-                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.16)"}
+                        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.1em", color: "rgba(255,255,255,0.38)", textDecoration: "none", textTransform: "uppercase" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.38)"}
                       >View →</a>
                     )}
                   </div>
