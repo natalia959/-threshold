@@ -248,7 +248,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
         background: "#131313",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 40px", height: 52,
       }}>
@@ -258,7 +257,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           </a>
           <a
             href="/explore"
-            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "#F7F4EC", fontWeight: 600, textTransform: "uppercase", textDecoration: "none" }}
+            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", fontWeight: 400, textTransform: "uppercase", textDecoration: "none" }}
           >Explore</a>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
