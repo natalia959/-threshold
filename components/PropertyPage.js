@@ -98,13 +98,16 @@ function RelatedCard({ property }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function PropertyPage({ property, allProperties = [], onBack }) {
-  const [askValue, setAskValue]     = useState("")
-  const [promptIdx, setPromptIdx]   = useState(0)
+  const [askValue, setAskValue]         = useState("")
+  const [promptIdx, setPromptIdx]       = useState(0)
   const [promptVisible, setPromptVisible] = useState(true)
-  const [askFocused, setAskFocused] = useState(false)
-  const [askOverlay, setAskOverlay] = useState(null)
-  const [pairings, setPairings]     = useState(null)
-  const [saved, setSaved]           = useState(false)
+  const [askFocused, setAskFocused]     = useState(false)
+  const [askOverlay, setAskOverlay]     = useState(null)
+  const [pairings, setPairings]         = useState(null)
+  const [saved, setSaved]               = useState(false)
+  const [insight, setInsight]           = useState("")
+  const [insightDone, setInsightDone]   = useState(false)
+  const [followUp, setFollowUp]         = useState("")
 
   useEffect(() => {
     if (askFocused) return
@@ -126,6 +129,35 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
       .then(r => r.json())
       .then(d => { if (Array.isArray(d?.suggestions) && d.suggestions.length) setPairings(d.suggestions) })
       .catch(() => {})
+  }, [property?.id])
+
+  // Auto-stream: why this house, then a follow-up question
+  useEffect(() => {
+    if (!property?.id) return
+    const prompt = `In 2 sentences explain what makes ${property.name} emotionally and architecturally compelling — be specific and evocative, not generic. Then on a new line write one short follow-up question (starting with "And " or "Would ") that invites the visitor to explore further.`
+    fetch("/api/insight", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: prompt, propertyId: property.id, history: [] }),
+    }).then(async res => {
+      if (!res.body) return
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let full = ""
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        full += decoder.decode(value, { stream: true })
+        setInsight(full)
+      }
+      // Extract follow-up question (last line starting with And/Would/Does)
+      const lines = full.split("\n").map(l => l.trim()).filter(Boolean)
+      const q = lines.findLast?.(l => /^(And |Would |Does |What )/i.test(l)) || ""
+      const body = q ? full.slice(0, full.lastIndexOf(q)).trim() : full
+      setInsight(body)
+      setFollowUp(q)
+      setInsightDone(true)
+    }).catch(() => {})
   }, [property?.id])
 
   const handleAsk = async () => {
@@ -326,58 +358,78 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
         </div>
       </section>
 
-      {/* ═══ GALLERY + IN RESIDENCE ══════════════════════════════════════════ */}
-      <section style={{ margin: "80px 0 0" }}>
+      {/* ═══ THREE-COLUMN: INSIGHT | GALLERY | IN RESIDENCE ═════════════════ */}
+      <section style={{ margin: "80px 0 0", padding: "0 16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 275px", gap: "0 40px", alignItems: "start" }}>
 
-        {/* Ask the House — full-width sticky bar */}
-        <div style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 20,
-          background: "rgba(12,12,12,0.92)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          display: "flex",
-          alignItems: "center",
-          gap: 20,
-          padding: "14px 16px",
-        }}>
-          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>
-            Ask the House
-          </span>
-          <div style={{ flex: 1, position: "relative", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 4 }}>
-            {!askValue && !askFocused && (
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.2)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {ASK_PROMPTS[promptIdx]}
+          {/* LEFT — Animated insight + Ask the House */}
+          <div style={{ position: "sticky", top: 80 }}>
+
+            {/* Why this house */}
+            <div style={{ marginBottom: 36 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 14 }}>
+                Why this house
+              </div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.55)", lineHeight: 1.75 }}>
+                {insight}
+                {!insightDone && insight && (
+                  <span style={{ display: "inline-block", width: 1, height: "0.9em", background: "rgba(255,255,255,0.4)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
+                )}
+                {!insight && (
+                  <span style={{ color: "rgba(255,255,255,0.12)" }}>—</span>
+                )}
+              </p>
+            </div>
+
+            {/* Follow-up question — appears after streaming, clickable */}
+            {followUp && (
+              <div style={{ marginBottom: 36, animation: "fadeUp 0.6s ease both" }}>
+                <button
+                  onClick={() => { setAskValue(followUp); setAskFocused(true) }}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}
+                >
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.28)", lineHeight: 1.65, transition: "color 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.6)"}
+                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}
+                  >
+                    {followUp}
+                  </p>
+                </button>
               </div>
             )}
-            <input
-              value={askValue}
-              onChange={e => setAskValue(e.target.value)}
-              onFocus={() => setAskFocused(true)}
-              onBlur={() => setAskFocused(false)}
-              onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
-              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "#fff" }}
-            />
+
+            {/* Divider */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginBottom: 24 }} />
+
+            {/* Ask the House input */}
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 14 }}>
+              Ask the House
+            </div>
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.11)", paddingBottom: 12, position: "relative", marginBottom: 10 }}>
+              {!askValue && !askFocused && (
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.17)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {ASK_PROMPTS[promptIdx]}
+                </div>
+              )}
+              <input
+                value={askValue}
+                onChange={e => setAskValue(e.target.value)}
+                onFocus={() => setAskFocused(true)}
+                onBlur={() => setAskFocused(false)}
+                onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
+                style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "#fff" }}
+              />
+            </div>
+            {askValue && (
+              <button onClick={handleAsk}
+                style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+                onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}
+              >Ask →</button>
+            )}
           </div>
-          {askValue && (
-            <button
-              onClick={handleAsk}
-              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", padding: 0, flexShrink: 0, transition: "color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"}
-            >
-              Ask →
-            </button>
-          )}
-        </div>
 
-        {/* Two-column grid: gallery + furniture */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 275px", gap: "0 32px", alignItems: "start", padding: "0 16px", marginTop: 28 }}>
-
-          {/* Gallery photos */}
+          {/* CENTER — Gallery photos */}
           <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             {galleryPhotos.map((photo, i) =>
               photo
