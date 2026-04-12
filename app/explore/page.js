@@ -225,7 +225,7 @@ export default function ExplorePage() {
         {/* Left: logo + label */}
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <Link href="/" style={{ textDecoration: "none" }}>
-            <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.04em", fontSize: 14, color: "#F7F4EC" }}>THRESHOLD</span>
+            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 29, width: "auto", display: "block" }} />
           </Link>
           <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.14em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>Explore Collections</span>
         </div>
