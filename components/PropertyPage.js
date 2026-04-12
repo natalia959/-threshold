@@ -272,7 +272,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       </nav>
 
       {/* ═══ MAIN 3-COLUMN ═══════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 196px", alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 196px", alignItems: "start" }}>
 
         {/* LEFT ─ all text, scrolls with page */}
         <div style={{ padding: "52px 36px 100px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
@@ -415,13 +415,13 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         <div style={{ display: "flex", flexDirection: "column" }}>
           {/* Hero */}
           {photos[0]
-            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", aspectRatio: "4/5", objectFit: "cover" }} />
+            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", height: "auto" }} />
             : <div style={{ width: "100%", aspectRatio: "4/5", background: "#1a1a20" }} />
           }
           {/* Gallery */}
           {galleryPhotos.map((photo, i) =>
             photo
-              ? <img key={i} src={photo} alt="" style={{ width: "100%", display: "block", aspectRatio: "3/2", objectFit: "cover", marginTop: 3 }} />
+              ? <img key={i} src={photo} alt="" style={{ width: "100%", display: "block", height: "auto", marginTop: 3 }} />
               : <div key={i} style={{ width: "100%", aspectRatio: "3/2", marginTop: 3, background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
           )}
         </div>
