@@ -82,39 +82,42 @@ export default function LandingPage({ onSearch }) {
         }}
         onClick={() => document.getElementById("landing-input").focus()}
       >
-        {/* Placeholder — Try stays fixed, only the prompt animates */}
-        {!value && !focused && (
-          <div style={{
-            position: "absolute", top: 24,
-            left: 32, right: 32,
-            pointerEvents: "none",
-            display: "flex", alignItems: "flex-start", gap: 6,
-          }}>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap", flexShrink: 0 }}>Try</span>
-            <span style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
-              color: "rgba(255,255,255,0.52)",
-              opacity: placeholderVisible ? 1 : 0,
-              transform: placeholderVisible ? "translateY(0px)" : "translateY(5px)",
-              transition: "opacity 0.8s ease, transform 0.8s ease",
-              display: "inline-block",
-            }}>'{PLACEHOLDERS[placeholderIdx]}'</span>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+          {/* "Try" prefix — always visible while placeholder is showing */}
+          {!value && !focused && (
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap", flexShrink: 0, lineHeight: 1.5 }}>Try</span>
+          )}
+
+          {/* Input + animated prompt overlay in the same position */}
+          <div style={{ flex: 1, position: "relative" }}>
+            {!value && !focused && (
+              <div style={{
+                position: "absolute", top: 0, left: 0, right: 0,
+                pointerEvents: "none",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
+                color: "rgba(255,255,255,0.52)", lineHeight: 1.5,
+                opacity: placeholderVisible ? 1 : 0,
+                transform: placeholderVisible ? "translateY(0px)" : "translateY(5px)",
+                transition: "opacity 0.8s ease, transform 0.8s ease",
+              }}>
+                '{PLACEHOLDERS[placeholderIdx]}'
+              </div>
+            )}
+            <input
+              id="landing-input"
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSubmit() } }}
+              style={{
+                width: "100%", background: "transparent", border: "none", outline: "none",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
+                color: "#F7F4EC", lineHeight: 1.5, minHeight: 42,
+              }}
+            />
           </div>
-        )}
-        {/* Input */}
-        <input
-          id="landing-input"
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSubmit() } }}
-          style={{
-            width: "100%", background: "transparent", border: "none", outline: "none",
-            fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
-            color: "#F7F4EC", lineHeight: 1.5, minHeight: 42,
-          }}
-        />
+        </div>
       </div>
     </div>
   )
