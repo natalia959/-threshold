@@ -74,28 +74,31 @@ export default function LandingPage({ onSearch }) {
           background: "rgba(255,255,255,0.07)",
           backdropFilter: "blur(32px) saturate(1.4)",
           WebkitBackdropFilter: "blur(32px) saturate(1.4)",
-          borderRadius: 50,
-          padding: "20px 32px",
+          borderRadius: 24,
+          padding: "24px 32px",
+          minHeight: 90,
           cursor: "text",
           position: "relative",
         }}
         onClick={() => document.getElementById("landing-input").focus()}
       >
-        {/* Animated placeholder */}
+        {/* Placeholder — Try stays fixed, only the prompt animates */}
         {!value && (
           <div style={{
-            position: "absolute", top: "50%", transform: "translateY(-50%)",
+            position: "absolute", top: 24,
             left: 32, right: 32,
             pointerEvents: "none",
-            display: "flex", alignItems: "center", gap: 6,
-            opacity: placeholderVisible ? 1 : 0,
-            transform: placeholderVisible
-              ? "translateY(-50%) translateY(0px)"
-              : "translateY(-50%) translateY(6px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
+            display: "flex", alignItems: "flex-start", gap: 6,
           }}>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>Try</span>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.52)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>'{PLACEHOLDERS[placeholderIdx]}'</span>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap", flexShrink: 0 }}>Try</span>
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
+              color: "rgba(255,255,255,0.52)",
+              opacity: placeholderVisible ? 1 : 0,
+              transform: placeholderVisible ? "translateY(0px)" : "translateY(5px)",
+              transition: "opacity 0.8s ease, transform 0.8s ease",
+              display: "inline-block",
+            }}>'{PLACEHOLDERS[placeholderIdx]}'</span>
           </div>
         )}
         {/* Input */}
@@ -109,7 +112,7 @@ export default function LandingPage({ onSearch }) {
           style={{
             width: "100%", background: "transparent", border: "none", outline: "none",
             fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
-            color: "#F7F4EC", lineHeight: 1,
+            color: "#F7F4EC", lineHeight: 1.5, minHeight: 42,
           }}
         />
       </div>
