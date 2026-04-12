@@ -277,7 +277,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 196px", alignItems: "start" }}>
 
         {/* LEFT ─ all text, scrolls with page, text pushed to bottom */}
-        <div style={{ padding: "0 36px 80px", borderRight: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: "calc(100vh - 52px)" }}>
+        <div style={{ padding: "55vh 36px 80px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
 
           {/* Location */}
           {property.location && (
@@ -446,7 +446,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             >
               {/* Thumbnail — portrait rectangle */}
               <div style={{ width: "100%", aspectRatio: "3/4", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
-                {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "8px" }} />}
               </div>
               {/* Hover overlay */}
               <div className="obj-overlay" style={{
