@@ -117,6 +117,11 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
 
   useEffect(() => {
     if (!property?.id) return
+    // Use manually curated items if they exist, otherwise call AI
+    if (Array.isArray(property.in_residence) && property.in_residence.length > 0) {
+      setPairings(property.in_residence)
+      return
+    }
     fetch("/api/furniture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property }) })
       .then(r => r.json())
       .then(d => { if (Array.isArray(d?.suggestions) && d.suggestions.length) setPairings(d.suggestions) })
@@ -407,9 +412,16 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
                 </div>
 
                 {/* Name */}
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "rgba(255,255,255,0.72)", lineHeight: 1.2, marginBottom: 6 }}>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "rgba(255,255,255,0.72)", lineHeight: 1.2, marginBottom: 8 }}>
                   {item.name}
                 </div>
+
+                {/* Why it belongs */}
+                {item.reason && (
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.28)", lineHeight: 1.65, marginBottom: 10 }}>
+                    {item.reason}
+                  </p>
+                )}
 
                 {/* Price + link */}
                 {item.price && (

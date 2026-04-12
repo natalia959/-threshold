@@ -21,7 +21,10 @@ const emptyProperty = {
   idea_tags: [], landscape_tag: "", collection: "", subcategory: "", photos: [], hero_photo: "",
   full_address: "", agent_name: "", agent_phone: "", agent_email: "", agent_brokerage: "",
   bedrooms: "", bathrooms: "", sqft: "", lot_size: "", published: false,
+  in_residence: [],
 }
+
+const emptyResidenceItem = { name: "", designer: "", year: "", category: "", reason: "", price: "", url: "", image: "" }
 
 function Label({ children }) {
   return <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.1em", color: "#999", marginBottom: 6, textTransform: "uppercase" }}>{children}</div>
@@ -63,7 +66,7 @@ export default function AdminPage() {
   }
 
   const handleEdit = (p) => {
-    setForm({ ...emptyProperty, ...p, idea_tags: p.idea_tags || [], photos: p.photos || [] })
+    setForm({ ...emptyProperty, ...p, idea_tags: p.idea_tags || [], photos: p.photos || [], in_residence: p.in_residence || [] })
     setEditing(p.id)
     setView("edit")
   }
@@ -103,6 +106,32 @@ export default function AdminPage() {
     setUploading(false)
     setMsg(`${urls.length} photo(s) uploaded`)
     setTimeout(() => setMsg(""), 3000)
+  }
+
+  const handleResidenceImageUpload = async (e, idx) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    const fd = new FormData()
+    fd.append("file", file)
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd })
+    const data = await res.json()
+    if (data.url) {
+      setForm(f => {
+        const items = [...(f.in_residence || [])]
+        items[idx] = { ...items[idx], image: data.url }
+        return { ...f, in_residence: items }
+      })
+    }
+    setUploading(false)
+  }
+
+  const setResidenceField = (idx, key, val) => {
+    setForm(f => {
+      const items = [...(f.in_residence || [])]
+      items[idx] = { ...items[idx], [key]: val }
+      return { ...f, in_residence: items }
+    })
   }
 
   const handleSave = async () => {
@@ -336,6 +365,62 @@ export default function AdminPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* In Residence */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.2em", color: "#555", textTransform: "uppercase", marginBottom: 24, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>In Residence</span>
+            <button
+              onClick={() => setForm(f => ({ ...f, in_residence: [...(f.in_residence || []), { ...emptyResidenceItem }] }))}
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 40, padding: "4px 14px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#aaa", cursor: "pointer" }}
+            >
+              + Add Item
+            </button>
+          </div>
+
+          {(!form.in_residence || form.in_residence.length === 0) && (
+            <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#333", textAlign: "center", padding: "24px 0" }}>
+              No items yet — AI will generate suggestions automatically.<br />Add items here to override with your own curation.
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            {(form.in_residence || []).map((item, idx) => (
+              <div key={idx} style={{ background: "#111", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: 20 }}>
+                <div style={{ display: "flex", gap: 20, marginBottom: 16 }}>
+                  {/* Image */}
+                  <label style={{ flexShrink: 0, width: 80, height: 80, borderRadius: 4, overflow: "hidden", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: "#1a1a1a", border: "1px dashed rgba(255,255,255,0.12)", position: "relative" }}>
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleResidenceImageUpload(e, idx)} />
+                    {item.image
+                      ? <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 10, color: "#444", textAlign: "center", lineHeight: 1.4 }}>Upload<br />image</span>
+                    }
+                  </label>
+                  {/* Name + Designer row */}
+                  <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div><Label>Object Name</Label><Input value={item.name} onChange={e => setResidenceField(idx, "name", e.target.value)} placeholder="Eames Lounge Chair" /></div>
+                    <div><Label>Designer</Label><Input value={item.designer} onChange={e => setResidenceField(idx, "designer", e.target.value)} placeholder="Charles & Ray Eames" /></div>
+                    <div><Label>Category</Label><Input value={item.category} onChange={e => setResidenceField(idx, "category", e.target.value)} placeholder="Seating" /></div>
+                    <div><Label>Year</Label><Input value={item.year} onChange={e => setResidenceField(idx, "year", e.target.value)} placeholder="1956" /></div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div><Label>Why it belongs here</Label><Input value={item.reason} onChange={e => setResidenceField(idx, "reason", e.target.value)} placeholder="Designed the same year Koenig was sketching Case Study #21 — shares the same optimism about industrial materials." multiline rows={2} /></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div><Label>Price</Label><Input value={item.price} onChange={e => setResidenceField(idx, "price", e.target.value)} placeholder="from $5,500" /></div>
+                    <div><Label>Purchase URL</Label><Input value={item.url} onChange={e => setResidenceField(idx, "url", e.target.value)} placeholder="https://..." /></div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      onClick={() => setForm(f => ({ ...f, in_residence: f.in_residence.filter((_, i) => i !== idx) }))}
+                      style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, color: "#e05555", cursor: "pointer" }}
+                    >Remove</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Agent & Details (verified members only) */}
