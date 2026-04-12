@@ -10,10 +10,10 @@ const ASK_PROMPTS = [
 ]
 
 const DEFAULT_PAIRINGS = [
-  { name: "Eames Lounge Chair", designer: "Charles & Ray Eames", year: "1956", category: "Seating", reason: "The original resolution of comfort and steel. It never needs explaining.", price: "$5,499", image: "" },
-  { name: "Noguchi Akari 1A",   designer: "Isamu Noguchi",       year: "1951", category: "Lighting", reason: "Light as sculpture. Never overhead. Always exactly here.", price: "$390", image: "" },
-  { name: "Honed Black Slate",  designer: "Natural stone",        year: "",     category: "Material", reason: "Cool underfoot. Holds the heat of the afternoon into evening.", price: "$28/sqft", image: "" },
-  { name: "Linen Trousers",     designer: "Margaret Howell",      year: "",     category: "Wardrobe", reason: "Made for a life with more space in it.", price: "$340", image: "" },
+  { name: "Eames Lounge Chair", designer: "Charles & Ray Eames", year: "1956", category: "Seating",  reason: "Chosen to face the view, not the room.", price: "$5,499", image: "" },
+  { name: "Noguchi Akari 1A",   designer: "Isamu Noguchi",       year: "1951", category: "Lighting", reason: "Selected to soften the concrete at night.", price: "$390",   image: "" },
+  { name: "Honed Black Slate",  designer: "Natural stone",        year: "",     category: "Material", reason: "Chosen to anchor the floor to the site.", price: "$28/sqft", image: "" },
+  { name: "Linen Trousers",     designer: "Margaret Howell",      year: "",     category: "Wardrobe", reason: "Picked for mornings with no agenda.",    price: "$340",    image: "" },
 ]
 
 // Subtle dark gradients used for object image placeholders

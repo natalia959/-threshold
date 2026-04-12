@@ -18,7 +18,7 @@ Return ONLY valid JSON array:
     "designer": "Charles & Ray Eames",
     "year": "1956",
     "price": "from $5,500",
-    "reason": "Designed the same year Koenig was sketching Case Study #21 — shares the same optimism about industrial materials as domestic comfort.",
+    "reason": "Chosen to face the canyon, not the room.",
     "url": "https://www.hermanmiller.com/products/seating/lounge-seating/eames-lounge-chair-and-ottoman/",
     "image": ""
   }
@@ -26,7 +26,7 @@ Return ONLY valid JSON array:
 
 Rules:
 - Only suggest real, purchasable pieces from real designers
-- The reason must be specific to THIS house, not generic
+- The reason must be one short sentence — 8 words maximum — starting with "Chosen to", "Selected for", "Positioned to", or similar action phrase. Specific to THIS house, never generic.
 - Mix iconic pieces with less obvious ones
 - Price should be real approximate retail
 - Include the purchase URL when known`,
