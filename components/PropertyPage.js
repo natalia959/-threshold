@@ -326,59 +326,59 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
         </div>
       </section>
 
-      {/* ═══ TWO-COLUMN: GALLERY + IN RESIDENCE ═════════════════════════════ */}
-      <section style={{ margin: "80px 0 0", padding: "0 16px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 275px", gap: "0 32px", alignItems: "start" }}>
+      {/* ═══ GALLERY + IN RESIDENCE ══════════════════════════════════════════ */}
+      <section style={{ margin: "80px 0 0" }}>
 
-          {/* CENTER — Ask sticky bar + gallery photos */}
-          <div>
-            {/* Ask the House — sticky bar above gallery */}
-            <div style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 20,
-              background: "rgba(12,12,12,0.88)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              borderBottom: "1px solid rgba(255,255,255,0.07)",
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              padding: "14px 0",
-              marginBottom: 28,
-            }}>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>
-                Ask the House
-              </span>
-              <div style={{ flex: 1, position: "relative", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 4 }}>
-                {!askValue && !askFocused && (
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.2)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {ASK_PROMPTS[promptIdx]}
-                  </div>
-                )}
-                <input
-                  value={askValue}
-                  onChange={e => setAskValue(e.target.value)}
-                  onFocus={() => setAskFocused(true)}
-                  onBlur={() => setAskFocused(false)}
-                  onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
-                  style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "#fff" }}
-                />
+        {/* Ask the House — full-width sticky bar */}
+        <div style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+          background: "rgba(12,12,12,0.92)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          display: "flex",
+          alignItems: "center",
+          gap: 20,
+          padding: "14px 16px",
+        }}>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>
+            Ask the House
+          </span>
+          <div style={{ flex: 1, position: "relative", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 4 }}>
+            {!askValue && !askFocused && (
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.2)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {ASK_PROMPTS[promptIdx]}
               </div>
-              {askValue && (
-                <button
-                  onClick={handleAsk}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", padding: 0, flexShrink: 0, transition: "color 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"}
-                >
-                  Ask →
-                </button>
-              )}
-            </div>
+            )}
+            <input
+              value={askValue}
+              onChange={e => setAskValue(e.target.value)}
+              onFocus={() => setAskFocused(true)}
+              onBlur={() => setAskFocused(false)}
+              onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
+              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "#fff" }}
+            />
+          </div>
+          {askValue && (
+            <button
+              onClick={handleAsk}
+              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", padding: 0, flexShrink: 0, transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"}
+            >
+              Ask →
+            </button>
+          )}
+        </div>
 
-            {/* Gallery photos stacked */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+        {/* Two-column grid: gallery + furniture */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 275px", gap: "0 32px", alignItems: "start", padding: "0 16px", marginTop: 28 }}>
+
+          {/* Gallery photos */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             {galleryPhotos.map((photo, i) =>
               photo
                 ? <div key={i} style={{ width: "100%", overflow: "hidden" }}>
@@ -386,8 +386,7 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
                   </div>
                 : <div key={i} style={{ width: "100%", aspectRatio: "3/2", background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
             )}
-            </div>{/* end gallery flex */}
-          </div>{/* end gallery column */}
+          </div>
 
           {/* RIGHT — In Residence objects */}
           <div style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 40, maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}>
