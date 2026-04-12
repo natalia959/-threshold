@@ -70,57 +70,49 @@ export default function LandingPage({ onSearch }) {
       {/* ── Search box ──────────────────────────────────────────────── */}
       <div
         style={{
-          width: "100%", maxWidth: 760,
-          background: "rgba(255,255,255,0.06)",
+          width: "100%", maxWidth: 780,
+          background: "rgba(255,255,255,0.07)",
           backdropFilter: "blur(32px) saturate(1.4)",
           WebkitBackdropFilter: "blur(32px) saturate(1.4)",
-          borderRadius: 16,
-          padding: "22px 24px 20px",
+          borderRadius: 50,
+          padding: "20px 32px",
           cursor: "text",
+          position: "relative",
         }}
         onClick={() => document.getElementById("landing-input").focus()}
       >
-        <div style={{ position: "relative", minHeight: 80 }}>
-          {/* Placeholder */}
-          {!value && (
-            <div style={{
-              position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none",
-              lineHeight: 1.55, opacity: placeholderVisible ? 1 : 0,
-              transition: "opacity 0.9s ease",
-            }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 19, color: "rgba(255,255,255,0.28)" }}>Try </span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 19, color: "rgba(255,255,255,0.22)" }}>{PLACEHOLDERS[placeholderIdx]}</span>
-            </div>
-          )}
-          {/* Textarea */}
-          <textarea
-            id="landing-input"
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit() } }}
-            rows={3}
-            style={{
-              width: "100%", background: "transparent", border: "none", outline: "none",
-              fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic",
-              fontSize: 19, color: "#F7F4EC", lineHeight: 1.55, resize: "none",
-            }}
-          />
-        </div>
+        {/* Animated placeholder */}
+        {!value && (
+          <div style={{
+            position: "absolute", top: "50%", transform: "translateY(-50%)",
+            left: 32, right: 32,
+            pointerEvents: "none",
+            display: "flex", alignItems: "center", gap: 6,
+            opacity: placeholderVisible ? 1 : 0,
+            transform: placeholderVisible
+              ? "translateY(-50%) translateY(0px)"
+              : "translateY(-50%) translateY(6px)",
+            transition: "opacity 0.8s ease, transform 0.8s ease",
+          }}>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>Try</span>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.52)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>'{PLACEHOLDERS[placeholderIdx]}'</span>
+          </div>
+        )}
+        {/* Input */}
+        <input
+          id="landing-input"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSubmit() } }}
+          style={{
+            width: "100%", background: "transparent", border: "none", outline: "none",
+            fontFamily: "'DM Sans', sans-serif", fontSize: 17, fontWeight: 400,
+            color: "#F7F4EC", lineHeight: 1,
+          }}
+        />
       </div>
-
-      {/* ── Hint ────────────────────────────────────────────────────── */}
-      <p style={{
-        marginTop: 14,
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: 10,
-        color: "rgba(255,255,255,0.18)",
-        letterSpacing: "0.1em",
-        textTransform: "uppercase",
-      }}>
-        Press Enter to search
-      </p>
     </div>
   )
 }
