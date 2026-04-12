@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import PropertyPage from "./PropertyPage"
 
 // ── Streaming interpretation text ─────────────────────────────────────────
@@ -190,16 +191,13 @@ function SkeletonCard({ height = 340 }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────
 export default function ResultsPage({ query, results, searching, onSearch, onBack, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
-  const [selectedProperty, setSelectedProperty] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
   const [focused, setFocused] = useState(false)
+  const router = useRouter()
 
-  if (selectedProperty) {
-    const allProperties = [
-      ...(results?.matched || []).map(m => m.property),
-      ...(results?.alsoLove || []).map(m => m.property),
-    ].filter(Boolean)
-    return <PropertyPage property={selectedProperty} allProperties={allProperties} onBack={() => setSelectedProperty(null)} searchQuery={query} />
+  const selectProperty = (property) => {
+    const url = query ? `/${property.id}?q=${encodeURIComponent(query)}` : `/${property.id}`
+    router.push(url)
   }
 
   const toggleFilter = f => setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
@@ -347,22 +345,22 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
         ) : matched.length === 1 ? (
           // Single result: full-width hero treatment
           <div style={{ animation: "fadeUp 0.5s ease" }}>
-            <HeroCard item={matched[0]} onSelect={setSelectedProperty} />
+            <HeroCard item={matched[0]} onSelect={selectProperty} />
           </div>
         ) : matched.length === 2 ? (
           // Two results: even split
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, animation: "fadeUp 0.5s ease" }}>
-            <EditorialCard item={matched[0]} onSelect={setSelectedProperty} tall />
-            <EditorialCard item={matched[1]} onSelect={setSelectedProperty} tall />
+            <EditorialCard item={matched[0]} onSelect={selectProperty} tall />
+            <EditorialCard item={matched[1]} onSelect={selectProperty} tall />
           </div>
         ) : (
           // 3+ results: hero first, then grid below
           <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.5s ease" }}>
-            <HeroCard item={matched[0]} onSelect={setSelectedProperty} />
+            <HeroCard item={matched[0]} onSelect={selectProperty} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {matched.slice(1).map((item, i) => (
                 <div key={item.id || i} style={{ animation: `fadeUp 0.4s ease both`, animationDelay: `${i * 80}ms` }}>
-                  <EditorialCard item={item} onSelect={setSelectedProperty} />
+                  <EditorialCard item={item} onSelect={selectProperty} />
                 </div>
               ))}
             </div>
@@ -384,7 +382,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
               {alsoLove.map((item, i) => (
                 <div key={item.id || i} style={{ animation: `fadeUp 0.4s ease both`, animationDelay: `${i * 60}ms` }}>
-                  <EditorialCard item={item} onSelect={setSelectedProperty} />
+                  <EditorialCard item={item} onSelect={selectProperty} />
                 </div>
               ))}
             </div>
