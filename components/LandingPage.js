@@ -137,22 +137,13 @@ export default function LandingPage({ onSearch }) {
         )
       })}
 
-      {/* ── Radial vignette — fades images toward center ─────────────── */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
-        background: "radial-gradient(ellipse 55% 60% at 50% 50%, #131313 35%, transparent 100%)",
-      }} />
-
       {/* ── Center content ──────────────────────────────────────────── */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 10,
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         padding: "0 40px",
-        gap: 0,
         textAlign: "center",
       }}>
-        <img src="/threshold-logo.png" alt="Threshold" style={{ height: 30, width: "auto", display: "block", marginBottom: 20 }} />
-
         <h1 style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: "clamp(38px, 5vw, 62px)",
@@ -160,39 +151,37 @@ export default function LandingPage({ onSearch }) {
           color: "#F7F4EC",
           lineHeight: 1.1,
           letterSpacing: "-0.02em",
-          marginBottom: 36,
+          marginBottom: 32,
         }}>
           Home for<br />your taste
         </h1>
 
-        {/* Search bar — frosted, no border, wide */}
+        {/* Search box — tall card style */}
         <div style={{
           width: "100%",
-          maxWidth: 780,
-          background: "rgba(255,255,255,0.07)",
-          backdropFilter: "blur(28px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(28px) saturate(1.5)",
-          borderRadius: 40,
-          display: "flex",
-          alignItems: "center",
-          padding: "18px 22px 18px 32px",
-          gap: 12,
-        }}>
-          <div style={{ flex: 1, position: "relative" }}>
+          maxWidth: 760,
+          background: "rgba(255,255,255,0.06)",
+          backdropFilter: "blur(32px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(32px) saturate(1.4)",
+          borderRadius: 16,
+          padding: "22px 22px 16px 24px",
+          cursor: "text",
+        }} onClick={() => document.getElementById("landing-input").focus()}>
+          {/* Input area */}
+          <div style={{ position: "relative", minHeight: 52, marginBottom: 20 }}>
             {!value && (
               <div style={{
-                position: "absolute", top: "50%", transform: "translateY(-50%)",
-                left: 0, right: 0, pointerEvents: "none",
+                position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none",
                 fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic",
-                fontSize: 19, color: "rgba(255,255,255,0.2)",
+                fontSize: 19, color: "rgba(255,255,255,0.22)", lineHeight: 1.5,
                 opacity: placeholderVisible ? 1 : 0,
                 transition: "opacity 0.5s ease",
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
               }}>
                 {PLACEHOLDERS[placeholderIdx]}
               </div>
             )}
             <input
+              id="landing-input"
               value={value}
               onChange={e => setValue(e.target.value)}
               onFocus={() => setFocused(true)}
@@ -201,23 +190,26 @@ export default function LandingPage({ onSearch }) {
               style={{
                 width: "100%", background: "transparent", border: "none", outline: "none",
                 fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic",
-                fontSize: 19, color: "#F7F4EC", lineHeight: 1,
+                fontSize: 19, color: "#F7F4EC", lineHeight: 1.5,
               }}
             />
           </div>
-          <button
-            onClick={handleSubmit}
-            style={{
-              background: value ? "#F7F4EC" : "rgba(255,255,255,0.1)",
-              border: "none", borderRadius: 28, padding: "10px 24px", cursor: "pointer",
-              fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 400,
-              color: value ? "#0c0c0c" : "rgba(255,255,255,0.28)",
-              letterSpacing: "0.06em", whiteSpace: "nowrap",
-              transition: "background 0.2s, color 0.2s", flexShrink: 0,
-            }}
-          >
-            Search
-          </button>
+          {/* Bottom row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+            <button
+              onClick={handleSubmit}
+              style={{
+                background: value ? "rgba(247,244,236,0.9)" : "rgba(255,255,255,0.08)",
+                border: "none", borderRadius: 10, padding: "8px 20px", cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 400,
+                color: value ? "#0c0c0c" : "rgba(255,255,255,0.25)",
+                letterSpacing: "0.08em",
+                transition: "background 0.2s, color 0.2s",
+              }}
+            >
+              Search →
+            </button>
+          </div>
         </div>
       </div>
     </div>
