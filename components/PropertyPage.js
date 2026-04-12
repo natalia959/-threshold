@@ -264,11 +264,11 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
       {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
       <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         background: "rgba(19,19,19,0.72)",
         backdropFilter: "blur(20px) saturate(1.4)",
         WebkitBackdropFilter: "blur(20px) saturate(1.4)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
+        display: "flex", alignItems: "center",
         padding: "0 40px", height: 52,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -287,15 +287,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = saved ? "#F7F4EC" : "rgba(255,255,255,0.5)" }}
           >
             {saved ? "Saved ✦" : "Save Estate"}
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "7px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "scale(1.02)" }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#F7F4EC"; e.currentTarget.style.transform = "scale(1)" }}
-          >
-            Request a Tour
           </button>
         </div>
       </nav>
@@ -377,7 +368,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           <div ref={sentinelRef} style={{ height: 0 }} />
 
           {/* Sticky block: insight + ask + CTA */}
-          <div style={{ position: "sticky", top: 52 }}>
+          <div style={{ position: "sticky", top: 64 }}>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "44px 0 32px" }} />
 
           {/* Why this house — streaming typewriter */}
@@ -438,7 +429,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* CTA */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 44 }}>
-            <button style={{ padding: "11px 0", background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>Request a Tour</button>
             <button onClick={() => setSaved(s => !s)} style={{ padding: "11px 0", background: "none", color: saved ? "#F7F4EC" : "rgba(255,255,255,0.36)", border: "1px solid rgba(255,255,255,0.11)", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer", transition: "all 0.2s" }}>
               {saved ? "Saved ✦" : "Save Estate"}
             </button>
@@ -450,8 +440,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         <div style={{ display: "flex", flexDirection: "column" }}>
           {/* Hero */}
           {photos[0]
-            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", height: "calc(100vh - 52px)", objectFit: "cover" }} />
-            : <div style={{ width: "100%", height: "calc(100vh - 52px)", background: "#1a1a20" }} />
+            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", height: "100vh", objectFit: "cover" }} />
+            : <div style={{ width: "100%", height: "100vh", background: "#1a1a20" }} />
           }
           {/* Gallery */}
           {galleryPhotos.map((photo, i) =>
@@ -463,8 +453,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
         {/* RIGHT ─ object thumbnails, sticky + independently scrollable */}
         <div style={{
-          position: "sticky", top: 52,
-          maxHeight: "calc(100vh - 52px)", overflowY: "auto",
+          position: "sticky", top: 0,
+          maxHeight: "100vh", overflowY: "auto",
           display: "flex", flexDirection: "column", gap: 16,
           borderLeft: "1px solid rgba(255,255,255,0.05)",
           padding: "16px 24px",
