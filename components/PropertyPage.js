@@ -263,11 +263,17 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       {askOverlay && <AskOverlay question={askOverlay.question} answer={askOverlay.answer} onClose={() => setAskOverlay(null)} />}
 
       {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+      {/* Frosted background — left column only */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, zIndex: 99,
+        width: "calc((100vw - 196px) / 3)",
+        height: 52,
         background: "rgba(19,19,19,0.72)",
         backdropFilter: "blur(20px) saturate(1.4)",
         WebkitBackdropFilter: "blur(20px) saturate(1.4)",
+      }} />
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         display: "flex", alignItems: "center",
         padding: "0 40px", height: 52,
       }}>
