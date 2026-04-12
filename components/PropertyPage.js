@@ -2,11 +2,16 @@
 import { useState, useEffect } from "react"
 
 const ASK_PROMPTS = [
-  "Does the kitchen receive morning light?",
-  "What materials define this space?",
-  "How does the light move throughout the day?",
-  "What makes this home architecturally significant?",
-  "How does the site shape the interior experience?",
+  "What's the flooring material in the living room?",
+  "How far to Erewhon?",
+  "What was the last renovation?",
+  "Does the main bedroom get morning light?",
+  "What's the cell reception like up here?",
+  "How old is the roof?",
+  "Is there a guest house?",
+  "What's the drive to the beach?",
+  "Any history of fire risk on this lot?",
+  "What are the utility costs like?",
 ]
 
 const DEFAULT_PAIRINGS = [
@@ -97,7 +102,7 @@ function RelatedCard({ property }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function PropertyPage({ property, allProperties = [], onBack }) {
+export default function PropertyPage({ property, allProperties = [], onBack, searchQuery = "" }) {
   const [askValue, setAskValue]         = useState("")
   const [promptIdx, setPromptIdx]       = useState(0)
   const [promptVisible, setPromptVisible] = useState(true)
@@ -134,7 +139,9 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
   // Auto-stream: why this house, then a follow-up question
   useEffect(() => {
     if (!property?.id) return
-    const prompt = `In 2 sentences explain what makes ${property.name} emotionally and architecturally compelling — be specific and evocative, not generic. Then on a new line write one short follow-up question (starting with "And " or "Would ") that invites the visitor to explore further.`
+    const prompt = searchQuery
+      ? `The visitor searched for: "${searchQuery}". In 2 sentences explain specifically why ${property.name} by ${property.architect} is the best match for what they're looking for — connect their search directly to what this house offers. Be specific and evocative. Then on a new line write one short conversational follow-up question (starting with "And " or "Would " or "Does ") to keep the conversation going.`
+      : `In 2 sentences explain what makes ${property.name} emotionally and architecturally compelling — be specific and evocative, not generic. Then on a new line write one short follow-up question (starting with "And " or "Would ") that invites the visitor to explore further.`
     fetch("/api/insight", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

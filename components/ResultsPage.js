@@ -199,7 +199,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
       ...(results?.matched || []).map(m => m.property),
       ...(results?.alsoLove || []).map(m => m.property),
     ].filter(Boolean)
-    return <PropertyPage property={selectedProperty} allProperties={allProperties} onBack={() => setSelectedProperty(null)} />
+    return <PropertyPage property={selectedProperty} allProperties={allProperties} onBack={() => setSelectedProperty(null)} searchQuery={query} />
   }
 
   const toggleFilter = f => setActiveFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
