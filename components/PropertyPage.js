@@ -111,6 +111,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const [pairings, setPairings]         = useState(null)
   const [saved, setSaved]               = useState(false)
   const [insight, setInsight]           = useState("")
+  const [displayedInsight, setDisplayedInsight] = useState("")
   const [insightDone, setInsightDone]   = useState(false)
   const [followUp, setFollowUp]         = useState("")
 
@@ -136,12 +137,26 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       .catch(() => {})
   }, [property?.id])
 
+  // Typewriter effect: step displayedInsight toward insight one char at a time
+  useEffect(() => {
+    if (insight.length <= displayedInsight.length) return
+    const t = setTimeout(() => {
+      setDisplayedInsight(insight.slice(0, displayedInsight.length + 1))
+    }, 18)
+    return () => clearTimeout(t)
+  }, [insight, displayedInsight])
+
   // Auto-stream: why this house, then a follow-up question
   useEffect(() => {
     if (!property?.id) return
+    setInsight("")
+    setDisplayedInsight("")
+    setFollowUp("")
+    setInsightDone(false)
+    const editorial = [property.significance, property.editorial].filter(Boolean).join(" ").slice(0, 300)
     const prompt = searchQuery
-      ? `The visitor searched for: "${searchQuery}". In 2 sentences explain specifically why ${property.name} by ${property.architect} is the best match for what they're looking for — connect their search directly to what this house offers. Be specific and evocative. Then on a new line write one short conversational follow-up question (starting with "And " or "Would " or "Does ") to keep the conversation going.`
-      : `In 2 sentences explain what makes ${property.name} emotionally and architecturally compelling — be specific and evocative, not generic. Then on a new line write one short follow-up question (starting with "And " or "Would ") that invites the visitor to explore further.`
+      ? `You're a warm, knowledgeable guide — like a friend who knows this house intimately. The visitor was looking for: "${searchQuery}". Without repeating any of this existing description: "${editorial}" — in 2 sentences tell them something specific and personal about why ${property.name} would actually feel right for them. Think about light, texture, morning routines, the sensation of arriving. Make it feel like insider knowledge. Then on a new line write one short, natural follow-up question (starting with "And " or "Would " or "Does ") — the kind a good friend would ask.`
+      : `You're a warm, knowledgeable guide — like a friend who knows this house intimately. Without repeating any of this existing description: "${editorial}" — in 2 sentences tell them something specific and personal about what it's actually like to live in ${property.name}. Think about light at different hours, the materiality underfoot, the feeling of the place. Then on a new line write one short, natural follow-up question that invites them to imagine themselves there.`
     fetch("/api/insight", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -206,10 +221,9 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
     ? [property.hero_photo, ...rawPhotos]
     : rawPhotos.length ? rawPhotos : [property.hero_photo].filter(Boolean)
 
-  // Gallery photos = everything after the hero (index 1+)
   const galleryPhotos = photos.slice(1).length > 0
     ? photos.slice(1)
-    : [null, null, null] // show 3 placeholders if no extra photos
+    : [null, null, null]
 
   const tags = [...(property.idea_tags || []), property.landscape_tag].filter(Boolean)
   const editorialParagraphs = typeof property.editorial === "string"
@@ -230,310 +244,234 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
       {askOverlay && <AskOverlay question={askOverlay.question} answer={askOverlay.answer} onClose={() => setAskOverlay(null)} />}
 
-      {/* ═══ HERO ════════════════════════════════════════════════════════════ */}
-      <section style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-        {photos[0]
-          ? <img src={photos[0]} alt={property.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          : <div style={{ position: "absolute", inset: 0, background: "#1a1a20" }} />
-        }
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,6,6,0.96) 0%, rgba(6,6,6,0.2) 38%, transparent 62%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(6,6,6,0.38) 0%, transparent 20%)" }} />
-
-        <nav style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "28px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 10 }}>
-          <button onClick={onBack || (() => window.history.back())} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-            <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.04em", fontSize: 14, color: "#F7F4EC" }}>THRESHOLD</span>
+      {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 100,
+        background: "#0c0c0c",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 40px", height: 52,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.06em", fontSize: 13, color: "#F7F4EC" }}>THRESHOLD</span>
+          <button
+            onClick={onBack || (() => window.history.back())}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.65)"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}
+          >← Explore Collection</button>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button onClick={() => setSaved(s => !s)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.36)", transition: "all 0.2s" }}>
+            {saved ? "Saved ✦" : "Save Estate"}
           </button>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button onClick={() => setSaved(s => !s)} style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.13)", borderRadius: 40, padding: "8px 20px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.48)", transition: "all 0.2s" }}>
-              {saved ? "Saved ✦" : "Save Estate"}
-            </button>
-            <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "9px 24px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 500 }}>
-              Request a Tour
-            </button>
-          </div>
-        </nav>
+          <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "7px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500 }}>
+            Request a Tour
+          </button>
+        </div>
+      </nav>
 
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 48px 52px", animation: "fadeUp 0.9s ease 0.15s both" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
-            <div style={{ maxWidth: 720 }}>
-              {property.location && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.2em", color: "rgba(255,255,255,0.36)", textTransform: "uppercase", marginBottom: 16 }}>{property.location}</div>}
-              <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(36px, 5.5vw, 72px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.0, marginBottom: 14 }}>{property.name}</h1>
-              <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-                {property.architect && <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.36)" }}>{property.architect}{property.year ? ` · ${property.year}` : ""}</span>}
-                {property.price && <>
-                  <span style={{ width: 1, height: 10, background: "rgba(255,255,255,0.16)", display: "inline-block" }} />
-                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.48)", fontWeight: 500 }}>{property.price}</span>
-                </>}
-              </div>
+      {/* ═══ MAIN 3-COLUMN ═══════════════════════════════════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 130px", alignItems: "start" }}>
+
+        {/* LEFT ─ all text, scrolls with page */}
+        <div style={{ padding: "52px 36px 100px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+
+          {/* Location */}
+          {property.location && (
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 16 }}>{property.location}</div>
+          )}
+
+          {/* Name */}
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(26px, 2.4vw, 40px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.06, marginBottom: 12 }}>{property.name}</h1>
+
+          {/* Architect · Year */}
+          {property.architect && (
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.26)", marginBottom: 6 }}>
+              {property.architect}{property.year ? ` · ${property.year}` : ""}
             </div>
-            <div style={{ flexShrink: 0, textAlign: "right" }}>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(255,255,255,0.22)", marginBottom: 10, lineHeight: 1.5 }}>Private materials available</p>
-              <button
-                style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 40, padding: "9px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", color: "rgba(255,255,255,0.38)", transition: "all 0.25s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#fff" }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)"; e.currentTarget.style.color = "rgba(255,255,255,0.38)" }}
-              >
-                Join Threshold Reserved →
+          )}
+
+          {/* Price */}
+          {property.price && (
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: "rgba(255,255,255,0.42)", marginBottom: 24 }}>{property.price}</div>
+          )}
+
+          {/* Scale */}
+          {(property.bedrooms || property.sqft) && (
+            <div style={{ marginBottom: 24 }}>
+              {property.bedrooms && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.22)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
+              {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 3 }}>{Number(property.sqft).toLocaleString()} sqft{property.lot_size ? ` · ${property.lot_size}` : ""}</div>}
+            </div>
+          )}
+
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div style={{ marginBottom: 36, display: "flex", flexWrap: "wrap", gap: "5px 12px" }}>
+              {tags.map(tag => (
+                <span key={tag} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.13em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase" }}>{tag}</span>
+              ))}
+            </div>
+          )}
+
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginBottom: 36 }} />
+
+          {/* Significance */}
+          {property.significance && (
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 300, color: "rgba(255,255,255,0.68)", lineHeight: 1.65, marginBottom: 24 }}>
+              {property.significance}
+            </p>
+          )}
+
+          {/* Editorial */}
+          {editorialParagraphs.map((para, i) => (
+            <p key={i} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: "rgba(255,255,255,0.36)", lineHeight: 1.88, marginBottom: 16 }}>{para}</p>
+          ))}
+
+          {/* Architect context */}
+          {property.architect_context && (
+            <div style={{ marginTop: 32 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Architect</div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "rgba(255,255,255,0.32)", lineHeight: 1.88 }}>{property.architect_context}</p>
+            </div>
+          )}
+
+          {/* Site context */}
+          {property.site_context && (
+            <div style={{ marginTop: 24 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Site</div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "rgba(255,255,255,0.32)", lineHeight: 1.88 }}>{property.site_context}</p>
+            </div>
+          )}
+
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "44px 0 32px" }} />
+
+          {/* Why this house — streaming typewriter */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase", marginBottom: 12 }}>
+              Why this house
+            </div>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.78 }}>
+              {displayedInsight}
+              {displayedInsight.length < insight.length && insight && (
+                <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.38)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
+              )}
+              {!insight && <span style={{ color: "rgba(255,255,255,0.1)" }}>—</span>}
+            </p>
+          </div>
+
+          {/* Follow-up question */}
+          {followUp && (
+            <div style={{ marginBottom: 32, animation: "fadeUp 0.6s ease both" }}>
+              <button onClick={() => { setAskValue(followUp); setAskFocused(true) }}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.24)", lineHeight: 1.65, transition: "color 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.52)"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.24)"}
+                >{followUp}</p>
               </button>
             </div>
+          )}
+
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginBottom: 22 }} />
+
+          {/* Ask the House */}
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase", marginBottom: 12 }}>
+            Ask the House
+          </div>
+          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 10, position: "relative", marginBottom: 10 }}>
+            {!askValue && !askFocused && (
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.16)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {ASK_PROMPTS[promptIdx]}
+              </div>
+            )}
+            <input
+              value={askValue}
+              onChange={e => setAskValue(e.target.value)}
+              onFocus={() => setAskFocused(true)}
+              onBlur={() => setAskFocused(false)}
+              onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
+              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "#fff" }}
+            />
+          </div>
+          {askValue && (
+            <button onClick={handleAsk}
+              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.26)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.26)"}
+            >Ask →</button>
+          )}
+
+          {/* CTA */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 44 }}>
+            <button style={{ padding: "11px 0", background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer" }}>Request a Tour</button>
+            <button onClick={() => setSaved(s => !s)} style={{ padding: "11px 0", background: "none", color: saved ? "#F7F4EC" : "rgba(255,255,255,0.36)", border: "1px solid rgba(255,255,255,0.11)", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", cursor: "pointer", transition: "all 0.2s" }}>
+              {saved ? "Saved ✦" : "Save Estate"}
+            </button>
           </div>
         </div>
 
-        <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)" }}>
-          <div style={{ width: 1, height: 32, background: "rgba(255,255,255,0.9)", margin: "0 auto", animation: "scrollPulse 2.4s ease-in-out infinite", transformOrigin: "top" }} />
+        {/* CENTER ─ hero image then gallery, scrolls with page */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* Hero */}
+          {photos[0]
+            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", aspectRatio: "4/5", objectFit: "cover" }} />
+            : <div style={{ width: "100%", aspectRatio: "4/5", background: "#1a1a20" }} />
+          }
+          {/* Gallery */}
+          {galleryPhotos.map((photo, i) =>
+            photo
+              ? <img key={i} src={photo} alt="" style={{ width: "100%", display: "block", aspectRatio: "3/2", objectFit: "cover", marginTop: 3 }} />
+              : <div key={i} style={{ width: "100%", aspectRatio: "3/2", marginTop: 3, background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
+          )}
         </div>
-      </section>
 
-      {/* ═══ THEMES ══════════════════════════════════════════════════════════ */}
-      {tags.length > 0 && (
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "44px 48px 0" }}>
-          {tags.map((tag, i) => (
-            <span key={tag}>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.2)", textTransform: "uppercase" }}>{tag}</span>
-              {i < tags.length - 1 && <span style={{ margin: "0 14px", color: "rgba(255,255,255,0.1)", fontSize: 10 }}>·</span>}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* ═══ EDITORIAL ════════════════════════════════════════════════════════ */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 48px 0" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "0 72px" }}>
-
-          {/* Left: sticky metadata */}
-          <div>
-            <div style={{ position: "sticky", top: 48 }}>
-              {property.architect && (
-                <div style={{ marginBottom: 36 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Architect</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)" }}>{property.architect}</div>
-                  {property.year && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 4 }}>{property.year}</div>}
-                </div>
-              )}
-              {property.location && (
-                <div style={{ marginBottom: 36 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Location</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)", lineHeight: 1.4 }}>{property.location}</div>
-                </div>
-              )}
-              {(property.bedrooms || property.sqft) && (
-                <div style={{ marginBottom: 36 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Scale</div>
-                  {property.bedrooms && <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.62)" }}>{property.bedrooms} bed · {property.bathrooms} bath</div>}
-                  {property.sqft && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 4 }}>{Number(property.sqft).toLocaleString()} sqft</div>}
-                  {property.lot_size && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{property.lot_size}</div>}
-                </div>
-              )}
-              {property.price && (
-                <div style={{ marginBottom: 36 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 10 }}>Price</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "rgba(255,255,255,0.62)" }}>{property.price}</div>
-                </div>
-              )}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <button style={{ padding: "10px 0", background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", cursor: "pointer" }}>Request a Tour</button>
-                <button onClick={() => setSaved(s => !s)} style={{ padding: "10px 0", background: "none", color: saved ? "#F7F4EC" : "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 40, fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.07em", cursor: "pointer", transition: "all 0.2s" }}>
-                  {saved ? "Saved ✦" : "Save Estate"}
-                </button>
+        {/* RIGHT ─ object thumbnails, sticky + independently scrollable */}
+        <div style={{
+          position: "sticky", top: 52,
+          maxHeight: "calc(100vh - 52px)", overflowY: "auto",
+          display: "flex", flexDirection: "column", gap: 2,
+          borderLeft: "1px solid rgba(255,255,255,0.05)",
+        }}>
+          {displayPairings.map((item, i) => (
+            <div key={i}>
+              {/* Thumbnail */}
+              <div style={{ width: "100%", aspectRatio: "1/1", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
+                {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
-            </div>
-          </div>
-
-          {/* Right: editorial narrative + context */}
-          <div>
-            {property.significance && (
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(21px, 2vw, 27px)", fontWeight: 300, color: "rgba(255,255,255,0.82)", lineHeight: 1.58, marginBottom: 36 }}>
-                {property.significance}
-              </p>
-            )}
-            {editorialParagraphs.map((para, i) => (
-              <p key={i} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: "rgba(255,255,255,0.44)", lineHeight: 1.84, marginBottom: 22 }}>{para}</p>
-            ))}
-            {property.architect_context && (
-              <div style={{ marginTop: 44 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 18 }}>The Architect</div>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.4)", lineHeight: 1.84 }}>{property.architect_context}</p>
-              </div>
-            )}
-            {property.site_context && (
-              <div style={{ marginTop: 36 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 18 }}>The Site</div>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "rgba(255,255,255,0.4)", lineHeight: 1.84 }}>{property.site_context}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ THREE-COLUMN: INSIGHT | GALLERY | IN RESIDENCE ═════════════════ */}
-      <section style={{ margin: "80px 0 0", padding: "0 16px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "275px 1fr 275px", gap: "0 40px", alignItems: "start" }}>
-
-          {/* LEFT — Animated insight + Ask the House */}
-          <div style={{ position: "sticky", top: 80 }}>
-
-            {/* Why this house */}
-            <div style={{ marginBottom: 36 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 14 }}>
-                Why this house
-              </div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 16, color: "rgba(255,255,255,0.55)", lineHeight: 1.75 }}>
-                {insight}
-                {!insightDone && insight && (
-                  <span style={{ display: "inline-block", width: 1, height: "0.9em", background: "rgba(255,255,255,0.4)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
-                )}
-                {!insight && (
-                  <span style={{ color: "rgba(255,255,255,0.12)" }}>—</span>
-                )}
-              </p>
-            </div>
-
-            {/* Follow-up question — appears after streaming, clickable */}
-            {followUp && (
-              <div style={{ marginBottom: 36, animation: "fadeUp 0.6s ease both" }}>
-                <button
-                  onClick={() => { setAskValue(followUp); setAskFocused(true) }}
-                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}
-                >
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.28)", lineHeight: 1.65, transition: "color 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.6)"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}
-                  >
-                    {followUp}
-                  </p>
-                </button>
-              </div>
-            )}
-
-            {/* Divider */}
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginBottom: 24 }} />
-
-            {/* Ask the House input */}
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.17)", textTransform: "uppercase", marginBottom: 14 }}>
-              Ask the House
-            </div>
-            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.11)", paddingBottom: 12, position: "relative", marginBottom: 10 }}>
-              {!askValue && !askFocused && (
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.17)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {ASK_PROMPTS[promptIdx]}
-                </div>
-              )}
-              <input
-                value={askValue}
-                onChange={e => setAskValue(e.target.value)}
-                onFocus={() => setAskFocused(true)}
-                onBlur={() => setAskFocused(false)}
-                onKeyDown={e => e.key === "Enter" && askValue.trim() && handleAsk()}
-                style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "#fff" }}
-              />
-            </div>
-            {askValue && (
-              <button onClick={handleAsk}
-                style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.28)"}
-              >Ask →</button>
-            )}
-          </div>
-
-          {/* CENTER — Gallery photos */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-            {galleryPhotos.map((photo, i) =>
-              photo
-                ? <div key={i} style={{ width: "100%", overflow: "hidden" }}>
-                    <img src={photo} alt="" style={{ width: "100%", display: "block", aspectRatio: "3/2", objectFit: "cover" }} />
-                  </div>
-                : <div key={i} style={{ width: "100%", aspectRatio: "3/2", background: `radial-gradient(ellipse at ${40 + i * 15}% ${50 + i * 10}%, #1e1a14 0%, #0c0b09 100%)` }} />
-            )}
-          </div>
-
-          {/* RIGHT — In Residence objects */}
-          <div style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 40, maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}>
-            {displayPairings.map((item, i) => (
-              <div key={i}>
-                {/* Object image */}
-                <div style={{
-                  width: "100%",
-                  aspectRatio: "5/4",
-                  borderRadius: 4,
-                  overflow: "hidden",
-                  background: PAIRING_PLACEHOLDERS[i % 4],
-                  marginBottom: 14,
-                  position: "relative",
-                }}>
-                  {item.image
-                    ? <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(240,235,225,0.03) 0%, transparent 60%)" }} />
-                  }
-                </div>
-
-                {/* Designer */}
+              {/* Info below thumbnail */}
+              <div style={{ padding: "8px 10px 12px" }}>
                 {item.designer && (
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.14em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 3 }}>
-                    {item.designer}
-                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.12em", color: "rgba(255,255,255,0.18)", textTransform: "uppercase", marginBottom: 2 }}>{item.designer}</div>
                 )}
-
-                {/* Category */}
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.14em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 10 }}>
-                  {item.category}
-                </div>
-
-                {/* Name */}
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "rgba(255,255,255,0.72)", lineHeight: 1.2, marginBottom: 8 }}>
-                  {item.name}
-                </div>
-
-                {/* Why it belongs */}
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.2, marginBottom: 3 }}>{item.name}</div>
                 {item.reason && (
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.28)", lineHeight: 1.65, marginBottom: 10 }}>
-                    {item.reason}
-                  </p>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 10, color: "rgba(255,255,255,0.2)", lineHeight: 1.5, marginBottom: 4 }}>{item.reason}</p>
                 )}
-
-                {/* Price + link */}
                 {item.price && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)" }}>{item.price}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, color: "rgba(255,255,255,0.18)" }}>{item.price}</span>
                     {item.url && item.url !== "#" && (
                       <a href={item.url} target="_blank" rel="noopener noreferrer"
-                        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.12em", color: "rgba(255,255,255,0.18)", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
+                        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.1em", color: "rgba(255,255,255,0.16)", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
                         onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
-                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.18)"}
+                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.16)"}
                       >View →</a>
                     )}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-
+            </div>
+          ))}
         </div>
-      </section>
 
-      {/* ═══ THRESHOLD RESERVED CTA ══════════════════════════════════════════ */}
-      <section style={{ margin: "96px 48px 0", borderRadius: 14, overflow: "hidden", position: "relative", minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {photos[1] && <img src={photos[1]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.18) saturate(0.3)", transform: "scale(1.04)" }} />}
-        <div style={{ position: "absolute", inset: 0, background: photos[1] ? "rgba(6,6,6,0.62)" : "#0e0e0e" }} />
-        <div style={{ position: "relative", textAlign: "center", padding: "64px 48px", maxWidth: 560 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.24em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 22 }}>Threshold Reserved</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.38, marginBottom: 14 }}>
-            Access full architectural details,<br />private materials, and deeper context.
-          </h2>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.28)", marginBottom: 36, lineHeight: 1.65 }}>
-            A private membership for those who take architecture seriously.
-          </p>
-          <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "12px 36px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, letterSpacing: "0.04em" }}>
-            Join Threshold Reserved
-          </button>
-        </div>
-      </section>
+      </div>
 
       {/* ═══ CONTINUE EXPLORING ═══════════════════════════════════════════════ */}
       {related.length > 0 && (
-        <section style={{ maxWidth: 1100, margin: "0 auto", padding: "96px 48px 120px" }}>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 72 }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 34, fontWeight: 300, color: "rgba(255,255,255,0.45)", marginBottom: 44 }}>
+        <section style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 48px 120px" }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 60 }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 300, color: "rgba(255,255,255,0.38)", marginBottom: 40 }}>
               You may also be drawn to
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
