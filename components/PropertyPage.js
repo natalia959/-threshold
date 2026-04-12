@@ -257,14 +257,24 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           </a>
           <a
             href="/explore"
-            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", fontWeight: 400, textTransform: "uppercase", textDecoration: "none" }}
+            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", color: "rgba(255,255,255,0.5)", fontWeight: 400, textTransform: "uppercase", textDecoration: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#F7F4EC" }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)" }}
           >Explore</a>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button onClick={() => setSaved(s => !s)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.36)", transition: "all 0.2s" }}>
+          <button onClick={() => setSaved(s => !s)}
+            style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.5)", transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#F7F4EC" }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = saved ? "#F7F4EC" : "rgba(255,255,255,0.5)" }}
+          >
             {saved ? "Saved ✦" : "Save Estate"}
           </button>
-          <button style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "7px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500 }}>
+          <button
+            style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "7px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "scale(1.02)" }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#F7F4EC"; e.currentTarget.style.transform = "scale(1)" }}
+          >
             Request a Tour
           </button>
         </div>
