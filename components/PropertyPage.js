@@ -274,8 +274,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       {/* ═══ MAIN 3-COLUMN ═══════════════════════════════════════════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 196px", alignItems: "start" }}>
 
-        {/* LEFT ─ all text, scrolls with page */}
-        <div style={{ padding: "52px 36px 100px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+        {/* LEFT ─ all text, scrolls with page, text pushed to bottom */}
+        <div style={{ padding: "0 36px 80px", borderRight: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: "calc(100vh - 52px)" }}>
 
           {/* Location */}
           {property.location && (
@@ -418,8 +418,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         <div style={{ display: "flex", flexDirection: "column" }}>
           {/* Hero */}
           {photos[0]
-            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", height: "auto" }} />
-            : <div style={{ width: "100%", aspectRatio: "4/5", background: "#1a1a20" }} />
+            ? <img src={photos[0]} alt={property.name} style={{ width: "100%", display: "block", height: "calc(100vh - 52px)", objectFit: "cover" }} />
+            : <div style={{ width: "100%", height: "calc(100vh - 52px)", background: "#1a1a20" }} />
           }
           {/* Gallery */}
           {galleryPhotos.map((photo, i) =>
