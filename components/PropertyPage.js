@@ -233,7 +233,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const related = (allProperties || []).filter(p => p.id !== property.id).slice(0, 3)
 
   return (
-    <div style={{ background: "#0c0c0c", color: "#fff", minHeight: "100vh" }}>
+    <div style={{ background: "#131313", color: "#fff", minHeight: "100vh" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
@@ -247,7 +247,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "#0c0c0c",
+        background: "#131313",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 40px", height: 52,
@@ -285,7 +285,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           )}
 
           {/* Name */}
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(26px, 2.4vw, 40px)", fontWeight: 300, color: "#F7F4EC", lineHeight: 1.06, marginBottom: 12 }}>{property.name}</h1>
+          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(16px, 1.4vw, 22px)", fontWeight: 400, color: "#F7F4EC", lineHeight: 1.18, marginBottom: 12, letterSpacing: "-0.01em" }}>{property.name}</h1>
 
           {/* Architect · Year */}
           {property.architect && (
@@ -320,21 +320,21 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Significance */}
           {property.significance && (
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 300, color: "rgba(255,255,255,0.68)", lineHeight: 1.65, marginBottom: 24 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.62)", lineHeight: 1.62, marginBottom: 24 }}>
               {property.significance}
             </p>
           )}
 
           {/* Editorial */}
           {editorialParagraphs.map((para, i) => (
-            <p key={i} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: "rgba(255,255,255,0.36)", lineHeight: 1.88, marginBottom: 16 }}>{para}</p>
+            <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.34)", lineHeight: 1.78, marginBottom: 14 }}>{para}</p>
           ))}
 
           {/* Architect context */}
           {property.architect_context && (
             <div style={{ marginTop: 32 }}>
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Architect</div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "rgba(255,255,255,0.32)", lineHeight: 1.88 }}>{property.architect_context}</p>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.78 }}>{property.architect_context}</p>
             </div>
           )}
 
@@ -342,7 +342,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {property.site_context && (
             <div style={{ marginTop: 24 }}>
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.13)", textTransform: "uppercase", marginBottom: 12 }}>The Site</div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "rgba(255,255,255,0.32)", lineHeight: 1.88 }}>{property.site_context}</p>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.78 }}>{property.site_context}</p>
             </div>
           )}
 
@@ -355,7 +355,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.16)", textTransform: "uppercase", marginBottom: 12 }}>
               Why this house
             </div>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.78 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.46)", lineHeight: 1.72 }}>
               {displayedInsight}
               {displayedInsight.length < insight.length && insight && (
                 <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.38)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />

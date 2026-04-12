@@ -7,7 +7,7 @@ const serif = "var(--font-eb-garamond), 'EB Garamond', Georgia, serif"
 const sans  = "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif"
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const BG      = "#151412"
+const BG      = "#131313"
 const INK     = "#F0EBE1"
 const MUTED   = "rgba(240,235,225,0.45)"
 const WHISPER = "rgba(240,235,225,0.22)"
