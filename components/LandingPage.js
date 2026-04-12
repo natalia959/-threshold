@@ -83,7 +83,7 @@ export default function LandingPage({ onSearch }) {
         onClick={() => document.getElementById("landing-input").focus()}
       >
         {/* Placeholder — Try stays fixed, only the prompt animates */}
-        {!value && (
+        {!value && !focused && (
           <div style={{
             position: "absolute", top: 24,
             left: 32, right: 32,
