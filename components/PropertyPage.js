@@ -386,7 +386,7 @@ export default function PropertyPage({ property, allProperties = [], onBack }) {
                 {/* Object image */}
                 <div style={{
                   width: "100%",
-                  aspectRatio: "4/3",
+                  aspectRatio: "5/4",
                   borderRadius: 4,
                   overflow: "hidden",
                   background: PAIRING_PLACEHOLDERS[i % 4],
