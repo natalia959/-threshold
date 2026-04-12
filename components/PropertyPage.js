@@ -257,7 +257,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           </a>
           <a
             href="/explore"
-            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.06em", color: "rgba(255,255,255,0.5)", fontWeight: 400, textTransform: "uppercase", textDecoration: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", transition: "all 0.2s" }}
+            style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.01em", color: "rgba(255,255,255,0.5)", fontWeight: 400, textDecoration: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#F7F4EC" }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)" }}
           >Explore</a>
