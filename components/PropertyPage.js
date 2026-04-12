@@ -272,7 +272,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       </nav>
 
       {/* ═══ MAIN 3-COLUMN ═══════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 156px", alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 196px", alignItems: "start" }}>
 
         {/* LEFT ─ all text, scrolls with page */}
         <div style={{ padding: "52px 36px 100px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
@@ -432,7 +432,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           maxHeight: "calc(100vh - 52px)", overflowY: "auto",
           display: "flex", flexDirection: "column", gap: 16,
           borderLeft: "1px solid rgba(255,255,255,0.05)",
-          padding: "16px 12px",
+          padding: "16px 24px",
         }}>
           {displayPairings.map((item, i) => (
             <div key={i} style={{ position: "relative", overflow: "hidden", borderRadius: 2 }}
