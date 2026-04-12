@@ -430,16 +430,17 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         <div style={{
           position: "sticky", top: 52,
           maxHeight: "calc(100vh - 52px)", overflowY: "auto",
-          display: "flex", flexDirection: "column", gap: 2,
+          display: "flex", flexDirection: "column", gap: 16,
           borderLeft: "1px solid rgba(255,255,255,0.05)",
+          padding: "16px 12px",
         }}>
           {displayPairings.map((item, i) => (
-            <div key={i} style={{ position: "relative", overflow: "hidden" }}
+            <div key={i} style={{ position: "relative", overflow: "hidden", borderRadius: 2 }}
               onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
               onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
             >
-              {/* Thumbnail */}
-              <div style={{ width: "100%", aspectRatio: "1/1", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
+              {/* Thumbnail — portrait rectangle */}
+              <div style={{ width: "100%", aspectRatio: "3/4", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
                 {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
               {/* Hover overlay */}
