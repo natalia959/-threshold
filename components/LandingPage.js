@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react"
 
 const PLACEHOLDERS = [
-  "calm, full of light, nothing unnecessary...",
-  "in the spirit of Tadao Ando...",
-  "a kitchen big enough for everyone, coffee, no rush...",
-  "warm but not precious — somewhere you actually live...",
-  "what Schindler would build today...",
-  "reading in a chair where the light finds you...",
-  "the vision of a perfect Sunday morning...",
+  "I'm an art collector looking for a residence that will best display my pieces — open walls, north light, generous ceiling height.",
+  "I love Prada and modern furniture. What house in Los Feliz would be the best fit for me?",
+  "Looking for a vacation house with beautiful views and a garden where my kids can run around.",
+  "Something that feels like it was built for one person and never quite recovered. Quiet, serious, a little severe.",
+  "A house a filmmaker would live in — dramatic light, raw materials, nothing decorative.",
+  "I want to wake up to a canyon and have a kitchen worth cooking a long Sunday breakfast in.",
+  "Midcentury, but not the kind everyone has. Something that still feels like a discovery.",
 ]
 
 const GRADIENTS = [
@@ -168,29 +168,32 @@ export default function LandingPage({ onSearch }) {
           cursor: "text",
         }} onClick={() => document.getElementById("landing-input").focus()}>
           {/* Input area */}
-          <div style={{ position: "relative", minHeight: 52, marginBottom: 20 }}>
+          <div style={{ position: "relative", minHeight: 72, marginBottom: 20 }}>
             {!value && (
               <div style={{
                 position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none",
                 fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic",
-                fontSize: 19, color: "rgba(255,255,255,0.22)", lineHeight: 1.5,
+                fontSize: 19, color: "rgba(255,255,255,0.22)", lineHeight: 1.55,
                 opacity: placeholderVisible ? 1 : 0,
                 transition: "opacity 0.5s ease",
+                textAlign: "left",
               }}>
                 {PLACEHOLDERS[placeholderIdx]}
               </div>
             )}
-            <input
+            <textarea
               id="landing-input"
               value={value}
               onChange={e => setValue(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSubmit() } }}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit() } }}
+              rows={3}
               style={{
                 width: "100%", background: "transparent", border: "none", outline: "none",
                 fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic",
-                fontSize: 19, color: "#F7F4EC", lineHeight: 1.5,
+                fontSize: 19, color: "#F7F4EC", lineHeight: 1.55,
+                resize: "none",
               }}
             />
           </div>
