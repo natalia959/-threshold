@@ -271,8 +271,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 40px", height: 52,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <a href="/" style={{ display: "block", lineHeight: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <a href="/" style={{ display: "block", lineHeight: 0, marginRight: 18 }}>
             <img src="/threshold-logo.png" alt="Threshold" style={{ height: 29, width: "auto", display: "block" }} />
           </a>
           <a
@@ -281,8 +281,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#F7F4EC" }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.5)" }}
           >Explore</a>
-        </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button onClick={() => setSaved(s => !s)}
             style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "6px 18px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: saved ? "#F7F4EC" : "rgba(255,255,255,0.5)", transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.color = "#F7F4EC" }}
@@ -290,6 +288,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           >
             {saved ? "Saved ✦" : "Save Estate"}
           </button>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             style={{ background: "#F7F4EC", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "7px 22px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "scale(1.02)" }}
