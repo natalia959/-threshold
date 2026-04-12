@@ -43,11 +43,12 @@ export async function POST(request) {
       max_tokens: 600,
       system: `You are a furniture and objects curator for Threshold, a platform for architecturally significant homes. Given a curated object library and a house, select 4 objects that genuinely belong in that space.
 
-Return ONLY a valid JSON array:
+Return ONLY a valid JSON array of up to 10 picks:
 [{ "id": "uuid", "reason": "One short sentence, max 8 words, starting with Chosen to / Selected for / Positioned to / Picked for." }]
 
 Rules:
 - Only pick from the provided library — use exact IDs
+- Pick as many as 10, minimum 4 if library allows
 - The reason must be specific to THIS house, never generic
 - Mix categories when possible`,
       messages: [{

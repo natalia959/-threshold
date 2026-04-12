@@ -229,7 +229,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const editorialParagraphs = typeof property.editorial === "string"
     ? property.editorial.split(/\n\n+/).filter(Boolean)
     : Array.isArray(property.editorial) ? property.editorial : []
-  const displayPairings = (pairings || DEFAULT_PAIRINGS).slice(0, 4)
+  const displayPairings = (pairings || DEFAULT_PAIRINGS).slice(0, 10)
   const related = (allProperties || []).filter(p => p.id !== property.id).slice(0, 3)
 
   return (
