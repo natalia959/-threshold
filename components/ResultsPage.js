@@ -238,7 +238,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
         <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}>
-          <span style={{ fontFamily: "var(--font-logo), sans-serif", fontWeight: 500, letterSpacing: "0.04em", fontSize: 14, color: "#F7F4EC" }}>THRESHOLD</span>
+          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 22, width: "auto", display: "block" }} />
         </button>
         <div style={{ position: "relative", background: "rgba(255,255,255,0.06)", borderRadius: 50, display: "flex", alignItems: "center", padding: "0 18px", height: 38 }}>
           <input

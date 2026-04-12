@@ -123,9 +123,7 @@ function Nav() {
         paddingRight: PAD,
       }}
     >
-      <span style={{ fontFamily: serif, fontSize: 15, letterSpacing: "0.22em", color: INK }}>
-        THRESHOLD
-      </span>
+      <img src="/threshold-logo.png" alt="Threshold" style={{ height: 24, width: "auto", display: "block" }} />
       <div className="flex items-center" style={{ gap: "2rem" }}>
         <Link
           href="/explore"
