@@ -217,99 +217,94 @@ function HeroSection({ onSearch }) {
         </div>
       </div>
 
-      {/* Layer 2 — frosted glass search bar */}
+      {/* Layer 2 — prominent pill search bar */}
       <div style={{
         position: "absolute",
-        bottom: 0,
+        bottom: "8%",
         left: 0,
         right: 0,
-        minHeight: 140,
-        background: "rgba(21,20,18,0.55)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderTop: `0.5px solid rgba(240,235,225,0.12)`,
         display: "flex",
-        alignItems: "flex-start",
-        paddingTop: "1.75rem",
-        paddingBottom: "1.75rem",
+        justifyContent: "center",
         paddingLeft: PAD,
         paddingRight: PAD,
-        gap: "2rem",
       }}>
-        {/* Input column */}
-        <div style={{ flex: 1, position: "relative" }}>
-          {!focused && !value && (
-            <div style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              pointerEvents: "none",
-              fontFamily: serif,
-              fontStyle: "italic",
-              fontSize: 18,
-              color: "rgba(240,235,225,0.38)",
-              lineHeight: 1.5,
-              opacity: placeholderVisible ? 1 : 0,
-              transition: "opacity 0.6s ease",
-            }}>
-              {PLACEHOLDERS[placeholderIdx]}
-            </div>
-          )}
+        <div style={{
+          width: "100%",
+          maxWidth: 780,
+          background: "rgba(28,25,21,0.88)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: 40,
+          border: "1px solid rgba(240,235,225,0.1)",
+          display: "flex",
+          alignItems: "center",
+          padding: "20px 28px",
+          gap: 16,
+        }}>
+          {/* Placeholder / input */}
+          <div style={{ flex: 1, position: "relative" }}>
+            {!focused && !value && (
+              <div style={{
+                position: "absolute",
+                top: "50%",
+                transform: "translateY(-50%)",
+                left: 0,
+                right: 0,
+                pointerEvents: "none",
+                display: "flex",
+                alignItems: "baseline",
+                gap: 8,
+                opacity: placeholderVisible ? 1 : 0,
+                transition: "opacity 0.6s ease",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}>
+                <span style={{ fontFamily: sans, fontWeight: 300, fontSize: 18, color: "rgba(240,235,225,0.3)", flexShrink: 0 }}>Try</span>
+                <span style={{ fontFamily: serif, fontStyle: "italic", fontSize: 20, color: "rgba(240,235,225,0.55)" }}>'{PLACEHOLDERS[placeholderIdx]}'</span>
+              </div>
+            )}
+            <input
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSubmit() } }}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontFamily: serif,
+                fontStyle: "italic",
+                fontSize: 20,
+                color: INK,
+                lineHeight: 1,
+              }}
+            />
+          </div>
 
-          <textarea
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit() } }}
-            rows={2}
+          {/* Search button */}
+          <button
+            onClick={handleSubmit}
             style={{
-              width: "100%",
-              background: "transparent",
+              background: value ? INK : "rgba(240,235,225,0.12)",
               border: "none",
-              outline: "none",
-              resize: "none",
-              fontFamily: serif,
-              fontStyle: "italic",
-              fontSize: 18,
-              color: INK,
-              lineHeight: 1.5,
-              display: "block",
+              borderRadius: 28,
+              padding: "10px 22px",
+              cursor: "pointer",
+              fontFamily: sans,
+              fontWeight: 400,
+              fontSize: 12,
+              color: value ? BG : "rgba(240,235,225,0.35)",
+              letterSpacing: "0.06em",
+              whiteSpace: "nowrap",
+              transition: "background 0.2s, color 0.2s",
+              flexShrink: 0,
             }}
-          />
-
-          <p style={{
-            fontFamily: sans,
-            fontWeight: 300,
-            fontSize: 11,
-            color: WHISPER,
-            letterSpacing: "0.08em",
-            margin: "0.5rem 0 0 0",
-          }}>
-            Describe a feeling, a name, a morning — anything.
-          </p>
+          >
+            Search
+          </button>
         </div>
-
-        <button
-          onClick={handleSubmit}
-          style={{
-            fontFamily: sans,
-            fontWeight: 300,
-            fontSize: 11,
-            color: MUTED,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-            paddingTop: "0.2rem",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Search →
-        </button>
       </div>
     </section>
   )
