@@ -410,8 +410,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Significance */}
           {/neutra|mapleton/i.test(property.name) && (
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 12 }}>
-              Thoughts by the curator &nbsp;·&nbsp; Natalia LaShure
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
+              Words by Natalia LaShure
             </div>
           )}
           {property.significance && (
