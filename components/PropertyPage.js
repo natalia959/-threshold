@@ -101,6 +101,61 @@ function RelatedCard({ property }) {
   )
 }
 
+// ── Object thumbnail with auto-sampled background ────────────────────────────
+function ObjectThumbnail({ item, placeholder }) {
+  const [bg, setBg] = useState(placeholder)
+
+  const handleLoad = (e) => {
+    try {
+      const img = e.target
+      const canvas = document.createElement("canvas")
+      canvas.width = 4
+      canvas.height = 4
+      const ctx = canvas.getContext("2d")
+      ctx.drawImage(img, 0, 0, 4, 4)
+      // Sample the top-left corner — most likely the background color
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+      setBg(`rgb(${r},${g},${b})`)
+    } catch {}
+  }
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden", borderRadius: 2 }}
+      onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
+      onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
+    >
+      <div style={{ width: "100%", aspectRatio: "3/4", background: bg, overflow: "hidden", transition: "background 0.4s ease" }}>
+        {item.image && (
+          <img
+            src={item.image}
+            alt={item.name}
+            crossOrigin="anonymous"
+            onLoad={handleLoad}
+            style={{ width: "100%", height: "100%", objectFit: "contain", padding: "8px" }}
+          />
+        )}
+      </div>
+      <div className="obj-overlay" style={{
+        position: "absolute", inset: 0,
+        background: "rgba(10,9,8,0.88)",
+        backdropFilter: "blur(4px)",
+        opacity: 0,
+        transition: "opacity 0.22s ease",
+        display: "flex", flexDirection: "column", justifyContent: "flex-end",
+        padding: "10px 10px 12px",
+      }}>
+        {item.designer && (
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.12em", color: "rgba(255,255,255,0.32)", textTransform: "uppercase", marginBottom: 2 }}>{item.designer}</div>
+        )}
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 1.2, marginBottom: 3 }}>{item.name}</div>
+        {item.reason && (
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 10, color: "rgba(255,255,255,0.42)", lineHeight: 1.5 }}>{item.reason}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function PropertyPage({ property, allProperties = [], onBack, searchQuery = "" }) {
   const [askValue, setAskValue]         = useState("")
@@ -465,33 +520,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           alignSelf: "start",
         }}>
           {displayPairings.map((item, i) => (
-            <div key={i} style={{ position: "relative", overflow: "hidden", borderRadius: 2 }}
-              onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
-              onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
-            >
-              {/* Thumbnail — portrait rectangle */}
-              <div style={{ width: "100%", aspectRatio: "3/4", background: PAIRING_PLACEHOLDERS[i % 4], overflow: "hidden" }}>
-                {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "8px" }} />}
-              </div>
-              {/* Hover overlay */}
-              <div className="obj-overlay" style={{
-                position: "absolute", inset: 0,
-                background: "rgba(10,9,8,0.88)",
-                backdropFilter: "blur(4px)",
-                opacity: 0,
-                transition: "opacity 0.22s ease",
-                display: "flex", flexDirection: "column", justifyContent: "flex-end",
-                padding: "10px 10px 12px",
-              }}>
-                {item.designer && (
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 7, letterSpacing: "0.12em", color: "rgba(255,255,255,0.32)", textTransform: "uppercase", marginBottom: 2 }}>{item.designer}</div>
-                )}
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 1.2, marginBottom: 3 }}>{item.name}</div>
-                {item.reason && (
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 10, color: "rgba(255,255,255,0.42)", lineHeight: 1.5 }}>{item.reason}</p>
-                )}
-              </div>
-            </div>
+            <ObjectThumbnail key={i} item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} />
           ))}
         </div>
 
