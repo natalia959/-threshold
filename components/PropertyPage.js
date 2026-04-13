@@ -101,24 +101,16 @@ function RelatedCard({ property }) {
   )
 }
 
-// ── Object thumbnail with auto-sampled background ────────────────────────────
-function ObjectThumbnail({ item, placeholder }) {
-  const [bg, setBg] = useState(item.image ? "#f0eeeb" : placeholder)
-
-  useEffect(() => {
-    if (!item.image) return
-    fetch(`/api/image-color?url=${encodeURIComponent(item.image)}`)
-      .then(r => r.json())
-      .then(d => { if (d.color) setBg(d.color) })
-      .catch(() => {})
-  }, [item.image])
+// ── Object thumbnail with pre-resolved background ────────────────────────────
+function ObjectThumbnail({ item, placeholder, bg }) {
+  const background = bg || (item.image ? "#f0eeeb" : placeholder)
 
   return (
     <div style={{ position: "relative", overflow: "hidden", borderRadius: 2, flexShrink: 0 }}
       onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
       onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
     >
-      <div style={{ width: "100%", aspectRatio: "3/4", background: bg, overflow: "hidden", transition: "background 0.5s ease" }}>
+      <div style={{ width: "100%", aspectRatio: "3/4", background, overflow: "hidden" }}>
         {item.image && (
           <img
             src={item.image}
@@ -156,6 +148,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const [askFocused, setAskFocused]     = useState(false)
   const [askOverlay, setAskOverlay]     = useState(null)
   const [pairings, setPairings]         = useState(null)
+  const [imageColors, setImageColors]   = useState({})
   const [saved, setSaved]               = useState(false)
   const [insight, setInsight]           = useState("")
   const [displayedInsight, setDisplayedInsight] = useState("")
@@ -185,6 +178,25 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       .then(d => { if (Array.isArray(d?.suggestions) && d.suggestions.length) setPairings(d.suggestions) })
       .catch(() => {})
   }, [property?.id])
+
+  // Pre-fetch background colors for all pairing images in parallel
+  useEffect(() => {
+    if (!pairings?.length) return
+    const urls = pairings.map(p => p.image).filter(Boolean)
+    if (!urls.length) return
+    Promise.all(
+      urls.map(url =>
+        fetch(`/api/image-color?url=${encodeURIComponent(url)}`)
+          .then(r => r.json())
+          .then(d => ({ url, color: d.color || "#f0eeeb" }))
+          .catch(() => ({ url, color: "#f0eeeb" }))
+      )
+    ).then(results => {
+      const map = {}
+      results.forEach(({ url, color }) => { map[url] = color })
+      setImageColors(map)
+    })
+  }, [pairings])
 
   // Typewriter effect: step displayedInsight toward insight one char at a time
   useEffect(() => {
@@ -499,7 +511,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           alignSelf: "start",
         }}>
           {displayPairings.map((item, i) => (
-            <ObjectThumbnail key={i} item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} />
+            <ObjectThumbnail key={i} item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} bg={item.image ? imageColors[item.image] : null} />
           ))}
         </div>
 
