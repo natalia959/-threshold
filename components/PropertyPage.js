@@ -419,19 +419,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             </p>
           </div>
 
-          {/* Follow-up question */}
-          {followUp && (
-            <div style={{ marginBottom: 32, animation: "fadeUp 0.6s ease both" }}>
-              <button onClick={() => { setAskValue(followUp); setAskFocused(true) }}
-                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.24)", lineHeight: 1.65, transition: "color 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.52)"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.24)"}
-                >{followUp}</p>
-              </button>
-            </div>
-          )}
-
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginBottom: 36 }} />
 
           {/* Significance */}
