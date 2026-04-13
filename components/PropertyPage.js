@@ -166,7 +166,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
   // Auto-stream: why this house, then a follow-up question
   useEffect(() => {
-    if (!property?.id || !insightStarted) return
+    if (!property?.id) return
     setInsight("")
     setDisplayedInsight("")
     setFollowUp("")
@@ -198,7 +198,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       setFollowUp(q)
       setInsightDone(true)
     }).catch(() => {})
-  }, [property?.id, insightStarted])
+  }, [property?.id])
 
   const handleAsk = async () => {
     const q = askValue.trim()
@@ -340,6 +340,33 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
             </div>
           )}
 
+          {/* Why this house — streaming typewriter */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
+              Why this house
+            </div>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.60)", lineHeight: 1.72 }}>
+              {displayedInsight}
+              {displayedInsight.length < insight.length && insight && (
+                <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.38)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
+              )}
+              {!insight && <span style={{ color: "rgba(255,255,255,0.1)" }}>—</span>}
+            </p>
+          </div>
+
+          {/* Follow-up question */}
+          {followUp && (
+            <div style={{ marginBottom: 32, animation: "fadeUp 0.6s ease both" }}>
+              <button onClick={() => { setAskValue(followUp); setAskFocused(true) }}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.24)", lineHeight: 1.65, transition: "color 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.52)"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.24)"}
+                >{followUp}</p>
+              </button>
+            </div>
+          )}
+
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginBottom: 36 }} />
 
           {/* Significance */}
@@ -373,37 +400,8 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           {/* Sentinel: fires insightStarted when scrolled past nav */}
           <div ref={sentinelRef} style={{ height: 0 }} />
 
-          {/* Sticky block: insight + ask + CTA */}
+          {/* Sticky block: ask + CTA */}
           <div style={{ position: "sticky", top: 64 }}>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "44px 0 32px" }} />
-
-          {/* Why this house — streaming typewriter */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
-              Why this house
-            </div>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.60)", lineHeight: 1.72 }}>
-              {displayedInsight}
-              {displayedInsight.length < insight.length && insight && (
-                <span style={{ display: "inline-block", width: 1, height: "0.85em", background: "rgba(255,255,255,0.38)", marginLeft: 2, verticalAlign: "middle", animation: "scrollPulse 1s ease-in-out infinite" }} />
-              )}
-              {!insight && <span style={{ color: "rgba(255,255,255,0.1)" }}>—</span>}
-            </p>
-          </div>
-
-          {/* Follow-up question */}
-          {followUp && (
-            <div style={{ marginBottom: 32, animation: "fadeUp 0.6s ease both" }}>
-              <button onClick={() => { setAskValue(followUp); setAskFocused(true) }}
-                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.24)", lineHeight: 1.65, transition: "color 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "rgba(255,255,255,0.52)"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.24)"}
-                >{followUp}</p>
-              </button>
-            </div>
-          )}
-
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginBottom: 22 }} />
 
           {/* Ask the House */}
