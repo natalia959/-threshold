@@ -295,6 +295,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes scrollPulse { 0%,100%{opacity:0.18;transform:scaleY(1)} 50%{opacity:0.45;transform:scaleY(1.18)} }
         ::-webkit-scrollbar { display:none; }
       `}</style>
@@ -491,7 +492,9 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           alignSelf: "start",
         }}>
           {displayPairings.map((item, i) => (
-            <ObjectThumbnail key={i} item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} />
+            <div key={i} style={{ animation: "fadeDown 0.5s ease both", animationDelay: `${i * 80}ms` }}>
+              <ObjectThumbnail item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} />
+            </div>
           ))}
         </div>
 
