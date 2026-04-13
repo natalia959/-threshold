@@ -410,6 +410,26 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
             Ask the House
           </div>
+
+          {/* Conversation thread — above the input */}
+          {conversation.length > 0 && (
+            <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+              {conversation.map((msg, i) => (
+                <div key={i} style={{ animation: "fadeUp 0.5s ease both" }}>
+                  {msg.role === "user" ? (
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(255,255,255,0.32)", lineHeight: 1.6 }}>
+                      {msg.text}
+                    </p>
+                  ) : (
+                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.68)", lineHeight: 1.72 }}>
+                      {msg.text || <span style={{ color: "rgba(255,255,255,0.15)" }}>—</span>}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: 10, position: "relative", marginBottom: 10 }}>
             {!askValue && !askFocused && (
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "rgba(255,255,255,0.16)", opacity: promptVisible ? 1 : 0, transition: "opacity 0.38s ease", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -431,26 +451,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
               onMouseEnter={e => e.currentTarget.style.color = "#fff"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.26)"}
             >Ask →</button>
-          )}
-
-          {/* Conversation thread */}
-          {conversation.length > 0 && (
-            <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 20 }}>
-              {conversation.map((msg, i) => (
-                <div key={i} style={{ animation: "fadeUp 0.5s ease both" }}>
-                  {msg.role === "user" ? (
-                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.6 }}>
-                      {msg.text}
-                    </p>
-                  ) : (
-                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.68)", lineHeight: 1.72 }}>
-                      {msg.text || <span style={{ color: "rgba(255,255,255,0.15)" }}>—</span>}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          )
 
           {/* CTA */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 44 }}>
