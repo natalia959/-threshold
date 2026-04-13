@@ -120,7 +120,7 @@ function ObjectThumbnail({ item, placeholder }) {
   }
 
   return (
-    <div style={{ position: "relative", overflow: "hidden", borderRadius: 2 }}
+    <div style={{ position: "relative", overflow: "hidden", borderRadius: 2, flexShrink: 0 }}
       onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
       onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
     >
