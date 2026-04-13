@@ -295,7 +295,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes thumbIn { from{opacity:0} to{opacity:1} }
         @keyframes scrollPulse { 0%,100%{opacity:0.18;transform:scaleY(1)} 50%{opacity:0.45;transform:scaleY(1.18)} }
         ::-webkit-scrollbar { display:none; }
       `}</style>
@@ -492,7 +492,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           alignSelf: "start",
         }}>
           {displayPairings.map((item, i) => (
-            <div key={i} style={{ animation: "fadeDown 1.4s cubic-bezier(0.16, 1, 0.3, 1) both", animationDelay: `${i * 160}ms` }}>
+            <div key={i} style={{ flexShrink: 0, animation: "thumbIn 1.2s ease both", animationDelay: `${i * 150}ms` }}>
               <ObjectThumbnail item={item} placeholder={PAIRING_PLACEHOLDERS[i % 4]} />
             </div>
           ))}
