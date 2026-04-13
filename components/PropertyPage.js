@@ -103,14 +103,22 @@ function RelatedCard({ property }) {
 
 // ── Object thumbnail with auto-sampled background ────────────────────────────
 function ObjectThumbnail({ item, placeholder }) {
-  const bg = item.image ? "#f0eeeb" : placeholder
+  const [bg, setBg] = useState(item.image ? "#f0eeeb" : placeholder)
+
+  useEffect(() => {
+    if (!item.image) return
+    fetch(`/api/image-color?url=${encodeURIComponent(item.image)}`)
+      .then(r => r.json())
+      .then(d => { if (d.color) setBg(d.color) })
+      .catch(() => {})
+  }, [item.image])
 
   return (
     <div style={{ position: "relative", overflow: "hidden", borderRadius: 2, flexShrink: 0 }}
       onMouseEnter={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "1"}
       onMouseLeave={e => e.currentTarget.querySelector(".obj-overlay").style.opacity = "0"}
     >
-      <div style={{ width: "100%", aspectRatio: "3/4", background: bg, overflow: "hidden" }}>
+      <div style={{ width: "100%", aspectRatio: "3/4", background: bg, overflow: "hidden", transition: "background 0.5s ease" }}>
         {item.image && (
           <img
             src={item.image}
