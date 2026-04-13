@@ -103,18 +103,28 @@ function RelatedCard({ property }) {
 
 // ── Object thumbnail with auto-sampled background ────────────────────────────
 function ObjectThumbnail({ item, placeholder }) {
-  const [bg, setBg] = useState(placeholder)
+  // Light neutral default when image exists; dark gradient only when no image
+  const [bg, setBg] = useState(item.image ? "#eeecea" : placeholder)
 
   const handleLoad = (e) => {
     try {
       const img = e.target
+      const size = 16
       const canvas = document.createElement("canvas")
-      canvas.width = 4
-      canvas.height = 4
+      canvas.width = size
+      canvas.height = size
       const ctx = canvas.getContext("2d")
-      ctx.drawImage(img, 0, 0, 4, 4)
-      // Sample the top-left corner — most likely the background color
-      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+      ctx.drawImage(img, 0, 0, size, size)
+      // Sample all 4 corners (slightly inset) and average
+      const pts = [
+        ctx.getImageData(1, 1, 1, 1).data,
+        ctx.getImageData(size - 2, 1, 1, 1).data,
+        ctx.getImageData(1, size - 2, 1, 1).data,
+        ctx.getImageData(size - 2, size - 2, 1, 1).data,
+      ]
+      const [r, g, b] = pts
+        .reduce((a, [pr, pg, pb]) => [a[0] + pr, a[1] + pg, a[2] + pb], [0, 0, 0])
+        .map(v => Math.round(v / pts.length))
       setBg(`rgb(${r},${g},${b})`)
     } catch {}
   }
