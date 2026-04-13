@@ -382,11 +382,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
 
           {/* Why this house — streaming typewriter */}
           <div style={{ marginBottom: 24 }}>
-            {/neutra|mapleton/i.test(property.name) && (
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 6 }}>
-                Thoughts by the curator &nbsp;·&nbsp; Natalia LaShure
-              </div>
-            )}
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
               Why this house
             </div>
@@ -402,6 +397,11 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginBottom: 36 }} />
 
           {/* Significance */}
+          {/neutra|mapleton/i.test(property.name) && (
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 8, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", marginBottom: 12 }}>
+              Thoughts by the curator &nbsp;·&nbsp; Natalia LaShure
+            </div>
+          )}
           {property.significance && (
             <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 400, color: "rgba(255,255,255,0.72)", lineHeight: 1.65, marginBottom: 24 }}>
               {property.significance}
