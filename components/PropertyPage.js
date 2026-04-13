@@ -341,7 +341,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 196px", alignItems: "stretch" }}>
 
         {/* LEFT ─ all text, scrolls with page, text pushed to bottom */}
-        <div style={{ padding: "75vh 36px 80px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ padding: "52vh 36px 80px", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
 
           {/* Location */}
           {property.location && (
