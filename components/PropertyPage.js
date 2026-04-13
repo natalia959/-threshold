@@ -29,50 +29,6 @@ const PAIRING_PLACEHOLDERS = [
   "radial-gradient(ellipse at 60% 55%, #1e1812 0%, #0e0b09 100%)",
 ]
 
-// ── Editorial Ask Overlay ─────────────────────────────────────────────────────
-function AskOverlay({ question, answer, onClose }) {
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 300,
-        background: "rgba(6,6,6,0.94)",
-        backdropFilter: "blur(24px) saturate(0.5)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "0 48px",
-        animation: "fadeIn 0.4s ease",
-        cursor: "pointer",
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: 860, display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 64, alignItems: "start", cursor: "default" }}
-      >
-        <div style={{ paddingTop: 4 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.18)", textTransform: "uppercase", marginBottom: 14 }}>You asked</div>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 19, color: "rgba(255,255,255,0.45)", lineHeight: 1.55 }}>
-            {question}
-          </p>
-          <button
-            onClick={onClose}
-            style={{ marginTop: 36, background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.18)", textTransform: "uppercase", padding: 0 }}
-          >
-            ← Back
-          </button>
-        </div>
-        <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", paddingLeft: 48 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.18)", textTransform: "uppercase", marginBottom: 14 }}>The house</div>
-          {!answer
-            ? <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 18, color: "rgba(255,255,255,0.2)", lineHeight: 1.75 }}>—</p>
-            : <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 18, color: "rgba(255,255,255,0.75)", lineHeight: 1.82, animation: "fadeUp 0.5s ease" }}>
-                {answer}
-              </p>
-          }
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ── Related card ──────────────────────────────────────────────────────────────
 function RelatedCard({ property }) {
@@ -146,7 +102,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const [promptIdx, setPromptIdx]       = useState(0)
   const [promptVisible, setPromptVisible] = useState(true)
   const [askFocused, setAskFocused]     = useState(false)
-  const [askOverlay, setAskOverlay]     = useState(null)
+  const [conversation, setConversation] = useState([]) // [{role:"user"|"house", text:""}]
   const [pairings, setPairings]         = useState(null)
   const [saved, setSaved]               = useState(false)
   const [insight, setInsight]           = useState("")
@@ -255,31 +211,37 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
     const q = askValue.trim()
     if (!q) return
     setAskValue("")
-    setAskOverlay({ question: q, answer: "" })
+    const userMsg = { role: "user", text: q }
+    const houseMsg = { role: "house", text: "" }
+    setConversation(prev => [...prev, userMsg, houseMsg])
+    const history = conversation.map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }))
+    const prompt = `You are answering questions about ${property.name} for a potential buyer. Be direct and concise — 1-3 sentences max. Always end with one short question to better understand what they're looking for or what matters to them. Question: ${q}`
     try {
       const res = await fetch("/api/insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q, propertyId: property.id, history: [] }),
+        body: JSON.stringify({ query: prompt, propertyId: property.id, history }),
       })
       if (!res.body) throw new Error()
-      const ct = res.headers.get("content-type") || ""
-      if (ct.includes("application/json")) {
-        const data = await res.json()
-        setAskOverlay(prev => ({ ...prev, answer: data.response || "" }))
-      } else {
-        const reader = res.body.getReader()
-        const decoder = new TextDecoder()
-        let full = ""
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          full += decoder.decode(value, { stream: true })
-          setAskOverlay(prev => ({ ...prev, answer: full }))
-        }
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let full = ""
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        full += decoder.decode(value, { stream: true })
+        setConversation(prev => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: "house", text: full }
+          return updated
+        })
       }
     } catch {
-      setAskOverlay(prev => ({ ...prev, answer: "The house is quiet right now." }))
+      setConversation(prev => {
+        const updated = [...prev]
+        updated[updated.length - 1] = { role: "house", text: "The house is quiet right now." }
+        return updated
+      })
     }
   }
 
@@ -311,8 +273,6 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
         @keyframes scrollPulse { 0%,100%{opacity:0.18;transform:scaleY(1)} 50%{opacity:0.45;transform:scaleY(1.18)} }
         ::-webkit-scrollbar { display:none; }
       `}</style>
-
-      {askOverlay && <AskOverlay question={askOverlay.question} answer={askOverlay.answer} onClose={() => setAskOverlay(null)} />}
 
       {/* ═══ NAV ═════════════════════════════════════════════════════════════ */}
       {/* Frosted background — left column only */}
@@ -471,6 +431,25 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
               onMouseEnter={e => e.currentTarget.style.color = "#fff"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.26)"}
             >Ask →</button>
+          )}
+
+          {/* Conversation thread */}
+          {conversation.length > 0 && (
+            <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 20 }}>
+              {conversation.map((msg, i) => (
+                <div key={i} style={{ animation: "fadeUp 0.5s ease both" }}>
+                  {msg.role === "user" ? (
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.6 }}>
+                      {msg.text}
+                    </p>
+                  ) : (
+                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.68)", lineHeight: 1.72 }}>
+                      {msg.text || <span style={{ color: "rgba(255,255,255,0.15)" }}>—</span>}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
 
           {/* CTA */}
