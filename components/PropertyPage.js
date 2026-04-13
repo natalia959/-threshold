@@ -203,9 +203,21 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
     return () => observer.disconnect()
   }, [])
 
+  // Trigger insight the moment the user starts scrolling
+  useEffect(() => {
+    if (insightStarted) return
+    const onScroll = () => {
+      if (window.scrollY > 0) {
+        setInsightStarted(true)
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [insightStarted])
+
   // Auto-stream: why this house, then a follow-up question
   useEffect(() => {
-    if (!property?.id) return
+    if (!property?.id || !insightStarted) return
     setInsight("")
     setDisplayedInsight("")
     setFollowUp("")
@@ -237,7 +249,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       setFollowUp(q)
       setInsightDone(true)
     }).catch(() => {})
-  }, [property?.id])
+  }, [property?.id, insightStarted])
 
   const handleAsk = async () => {
     const q = askValue.trim()
