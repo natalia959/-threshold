@@ -279,7 +279,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <a href="/" style={{ display: "block", lineHeight: 0, marginRight: 18 }}>
-            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 29, width: "auto", display: "block" }} />
+            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto", display: "block" }} />
           </a>
           <a
             href="/explore"

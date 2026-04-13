@@ -44,7 +44,7 @@ export default function LandingPage({ onSearch }) {
         display: "flex", alignItems: "center", gap: 10,
         padding: "0 40px", height: 52,
       }}>
-        <img src="/threshold-logo.png" alt="Threshold" style={{ height: 27, width: "auto", display: "block", marginRight: 8 }} />
+        <img src="/threshold-logo.png" alt="Threshold" style={{ height: 41, width: "auto", display: "block", marginRight: 8 }} />
         <a
           href="/explore"
           style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textDecoration: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 40, padding: "6px 18px", transition: "all 0.2s" }}
