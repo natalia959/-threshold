@@ -30,6 +30,18 @@ const PAIRING_PLACEHOLDERS = [
 ]
 
 
+// ── Split long text into chunks of N sentences ────────────────────────────────
+function splitParagraphs(text, sentencesPerChunk = 2) {
+  if (!text) return []
+  const sentences = text.match(/[^.!?]+[.!?]+["']?/g) || [text]
+  const chunks = []
+  for (let i = 0; i < sentences.length; i += sentencesPerChunk) {
+    const chunk = sentences.slice(i, i + sentencesPerChunk).join(" ").trim()
+    if (chunk) chunks.push(chunk)
+  }
+  return chunks
+}
+
 // ── Related card ──────────────────────────────────────────────────────────────
 function RelatedCard({ property }) {
   const [hovered, setHovered] = useState(false)
@@ -372,30 +384,36 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", marginBottom: 12 }}>
             Words by Natalia LaShure
           </div>
-          {property.significance && (
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 400, color: "rgba(255,255,255,0.72)", lineHeight: 1.65, marginBottom: 24 }}>
-              {property.significance}
+          {property.significance && splitParagraphs(property.significance, 2).map((chunk, i) => (
+            <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 400, color: "rgba(255,255,255,0.72)", lineHeight: 1.72, marginBottom: 28 }}>
+              {chunk}
             </p>
-          )}
+          ))}
 
           {/* Editorial */}
-          {editorialParagraphs.map((para, i) => (
-            <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.52)", lineHeight: 1.78, marginBottom: 14 }}>{para}</p>
-          ))}
+          {editorialParagraphs.flatMap((para, i) =>
+            splitParagraphs(para, 2).map((chunk, j) => (
+              <p key={`${i}-${j}`} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.52)", lineHeight: 1.82, marginBottom: 28 }}>{chunk}</p>
+            ))
+          )}
 
           {/* Architect context */}
           {property.architect_context && (
-            <div style={{ marginTop: 32 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 12 }}>The Architect</div>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.78 }}>{property.architect_context}</p>
+            <div style={{ marginTop: 44 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 16 }}>The Architect</div>
+              {splitParagraphs(property.architect_context, 2).map((chunk, i) => (
+                <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.82, marginBottom: 24 }}>{chunk}</p>
+              ))}
             </div>
           )}
 
           {/* Site context */}
           {property.site_context && (
-            <div style={{ marginTop: 24 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 12 }}>The Site</div>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.78 }}>{property.site_context}</p>
+            <div style={{ marginTop: 36 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 16 }}>The Site</div>
+              {splitParagraphs(property.site_context, 2).map((chunk, i) => (
+                <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.82, marginBottom: 24 }}>{chunk}</p>
+              ))}
             </div>
           )}
 
