@@ -6,8 +6,26 @@ import ResultsPage from "../components/ResultsPage"
 import SignInModal from "../components/SignInModal"
 import VerifiedModal from "../components/VerifiedModal"
 
+function ComingSoon() {
+  return (
+    <div style={{
+      background: "#131313", height: "100vh",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 20, color: "#fff",
+    }}>
+      <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto" }} />
+      <p style={{
+        fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: "0.18em",
+        color: "rgba(255,255,255,0.32)", textTransform: "uppercase", margin: 0,
+      }}>
+        Coming soon
+      </p>
+    </div>
+  )
+}
+
 export default function Page() {
-  const [view, setView] = useState("home")
+  const [view, setView] = useState("coming-soon")
   const [query, setQuery] = useState("")
   const [results, setResults] = useState(null)
   const [searching, setSearching] = useState(false)
@@ -110,7 +128,7 @@ export default function Page() {
 
   return (
     <>
-      {view === "results" ? (
+      {view === "coming-soon" ? <ComingSoon /> : view === "results" ? (
         <ResultsPage
           query={query}
           results={results}
