@@ -469,7 +469,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
               onMouseEnter={e => e.currentTarget.style.color = "#fff"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.26)"}
             >Ask →</button>
-          )
+          )}
 
           {/* CTA */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 44 }}>

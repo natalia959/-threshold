@@ -45,11 +45,22 @@ function getRelevantTags(results) {
     .map(([tag]) => tag)
 }
 
+// ── Pick the best hero image for a result item ────────────────────────────
+function resolveHeroImage(item) {
+  const property = item?.property
+  if (!property) return null
+  if (item.heroPhotoIndex != null && property.photos?.[item.heroPhotoIndex]) {
+    return property.photos[item.heroPhotoIndex]
+  }
+  return property.hero_photo || property.image || null
+}
+
 // ── Single large result card (1 result or first featured) ─────────────────
 function HeroCard({ item, onSelect }) {
   const [hovered, setHovered] = useState(false)
   const property = item?.property
   if (!property) return null
+  const heroImage = resolveHeroImage(item)
 
   return (
     <div
@@ -65,9 +76,9 @@ function HeroCard({ item, onSelect }) {
       }}
     >
       <div style={{ position: "relative", height: 560 }}>
-        {(property.hero_photo || property.image) && (
+        {heroImage && (
           <img
-            src={property.hero_photo || property.image}
+            src={heroImage}
             alt={property.name}
             style={{
               position: "absolute", inset: 0, width: "100%", height: "100%",
@@ -121,6 +132,7 @@ function EditorialCard({ item, onSelect, tall = false }) {
   const property = item?.property
   if (!property) return null
   const imgH = tall ? 480 : 340
+  const heroImage = resolveHeroImage(item)
 
   return (
     <div
@@ -135,9 +147,9 @@ function EditorialCard({ item, onSelect, tall = false }) {
       }}
     >
       <div style={{ position: "relative", height: imgH }}>
-        {(property.hero_photo || property.image) && (
+        {heroImage && (
           <img
-            src={property.hero_photo || property.image}
+            src={heroImage}
             alt={property.name}
             style={{
               position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",

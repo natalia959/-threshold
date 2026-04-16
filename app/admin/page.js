@@ -51,6 +51,41 @@ export default function AdminPage() {
   const [objects, setObjects] = useState([])
   const [objForm, setObjForm] = useState(emptyObject)
   const [editingObj, setEditingObj] = useState(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeLog, setAnalyzeLog] = useState([])
+
+  const handleAnalyzePhotos = async (propertyId = null) => {
+    setAnalyzing(true)
+    setAnalyzeLog([])
+    try {
+      const res = await fetch("/api/admin/analyze-photos", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(propertyId ? { propertyId } : {}),
+      })
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ""
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split("\n")
+        buf = lines.pop()
+        for (const line of lines) {
+          if (!line.trim()) continue
+          try {
+            const obj = JSON.parse(line)
+            setAnalyzeLog(prev => [...prev, obj])
+          } catch {}
+        }
+      }
+    } catch (e) {
+      setAnalyzeLog(prev => [...prev, { error: e.message }])
+    }
+    setAnalyzing(false)
+    load()
+  }
 
   const headers = { "Content-Type": "application/json", "x-admin-password": ADMIN_PASSWORD }
 
@@ -230,6 +265,7 @@ export default function AdminPage() {
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           {msg && <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#c9a96e" }}>{msg}</span>}
           <button onClick={() => setView("objects")} style={{ background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#aaa", cursor: "pointer" }}>Objects Library</button>
+          <button onClick={() => handleAnalyzePhotos()} disabled={analyzing} style={{ background: "none", border: "1px solid rgba(201,169,110,0.3)", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: analyzing ? "#666" : "#c9a96e", cursor: analyzing ? "default" : "pointer" }}>{analyzing ? "Analyzing…" : "Analyze Photos"}</button>
           <button onClick={handleNew} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "10px 24px", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, cursor: "pointer" }}>+ New Property</button>
           <a href="/" style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#555", textDecoration: "none" }}>← Site</a>
         </div>
@@ -267,8 +303,11 @@ export default function AdminPage() {
                       {p.published ? "Live" : "Draft"}
                     </button>
                   </td>
-                  <td style={{ padding: "16px 0", display: "flex", gap: 12 }}>
+                  <td style={{ padding: "16px 0", display: "flex", gap: 12, alignItems: "center" }}>
                     <button onClick={() => handleEdit(p)} style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#fff", cursor: "pointer" }}>Edit</button>
+                    <button onClick={() => handleAnalyzePhotos(p.id)} disabled={analyzing} style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#c9a96e", cursor: analyzing ? "default" : "pointer" }}>
+                      {p.photo_descriptions?.length ? "Re-analyze" : "Analyze"}
+                    </button>
                     <button onClick={() => handleDelete(p.id)} style={{ background: "none", border: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "#e05555", cursor: "pointer" }}>Delete</button>
                   </td>
                 </tr>
@@ -277,6 +316,25 @@ export default function AdminPage() {
           </table>
         )}
       </div>
+
+      {/* Analyze log */}
+      {analyzeLog.length > 0 && (
+        <div style={{ margin: "0 48px 48px", background: "#111", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: 24, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, color: "#888", maxHeight: 320, overflowY: "auto" }}>
+          <div style={{ color: "#c9a96e", marginBottom: 12, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase" }}>Photo Analysis Log</div>
+          {analyzeLog.map((entry, i) => (
+            <div key={i} style={{ marginBottom: 4, color: entry.error ? "#e05555" : entry.status === "done" ? "#6ec97a" : entry.description ? "#ccc" : "#666" }}>
+              {entry.status === "start" && `Starting analysis of ${entry.total} properties…`}
+              {entry.status === "skip" && `${entry.property}: skipped (${entry.reason})`}
+              {entry.status === "analyzing" && `${entry.property}: analyzing ${entry.count} photos…`}
+              {entry.description != null && `  [${entry.photo}] ${entry.description || "(failed)"}`}
+              {entry.status === "done" && `✓ ${entry.property}: saved`}
+              {entry.status === "error" && `✗ ${entry.property}: ${entry.error}`}
+              {entry.status === "complete" && "Analysis complete."}
+              {entry.error && !entry.status && `Error: ${entry.error}`}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 
