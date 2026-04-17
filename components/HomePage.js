@@ -2,66 +2,40 @@
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "../lib/supabase"
 
-// ── Categories — hardcoded images per word ────────────────────────────────
-
-const CATEGORIES = [
-  {
-    word: "Homes",
-    images: [
-      { url: "/homes-1.jpg" },
-      { url: "/homes-2.webp" },
-      { url: "/homes-3.jpg" },
-      { url: "/homes-4.jpg" },
-    ],
-  },
-  {
-    word: "Objects",
-    images: [
-      // Add your Objects images here
-    ],
-  },
-  {
-    word: "Living",
-    images: [
-      // Add your Living images here
-    ],
-  },
-]
-
 const FALLBACK_COLORS = [
   "#1a2030","#182818","#282018","#1e1e2c","#201a28","#1a2818","#2c2018","#181e2c",
 ]
 
-function imagesForCategory(categoryIdx) {
-  const imgs = CATEGORIES[categoryIdx].images
-  return imgs.length ? imgs : FALLBACK_COLORS.map(c => ({ color: c }))
-}
+// ── Infinite scrolling gallery ────────────────────────────────────────────
 
-// ── Gallery row ───────────────────────────────────────────────────────────
-
-function GalleryRow({ images, leaving }) {
-  const displayed = images.filter(img => img.url).slice(0, 7)
+function ScrollingGallery({ images }) {
+  // Duplicate images so the loop is seamless
+  const items = images.length ? [...images, ...images] : FALLBACK_COLORS.map(c => ({ color: c }))
   return (
-    <div style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "center", padding: "0 48px" }}>
-      {displayed.map((img, i) => (
-        <div key={i} style={{
-          flexShrink: 0, width: 180, height: 200,
-          borderRadius: 8, overflow: "hidden",
-          background: "#1a1a18",
-          animation: leaving
-            ? `imgOut 0.6s cubic-bezier(0.4,0,0.2,1) both`
-            : `imgIn 1.1s cubic-bezier(0.4,0,0.2,1) both`,
-          animationDelay: leaving ? `${i * 40}ms` : `${i * 70}ms`,
-        }}>
-          <img src={img.url} alt={img.name || ""}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        </div>
-      ))}
+    <div style={{ overflow: "hidden", width: "100%" }}>
+      <div style={{
+        display: "flex", gap: 16,
+        animation: `marquee ${images.length * 6}s linear infinite`,
+        width: "max-content",
+      }}>
+        {items.map((img, i) => (
+          <div key={i} style={{
+            flexShrink: 0, width: 220, height: 280,
+            borderRadius: 8, overflow: "hidden",
+            background: img.color || "#1a1a18",
+          }}>
+            {img.url && (
+              <img src={img.url} alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
-// ── Collection card (scroll section) ──────────────────────────────────────
+// ── Collection card ───────────────────────────────────────────────────────
 
 function CollectionCard({ property, large }) {
   const [hovered, setHovered] = useState(false)
@@ -88,46 +62,26 @@ function CollectionCard({ property, large }) {
   )
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────
+
+const GALLERY_IMAGES = [
+  { url: "/homes-1.jpg" },
+  { url: "/homes-2.webp" },
+  { url: "/homes-3.jpg" },
+  { url: "/homes-4.jpg" },
+]
 
 export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
-  const [properties,    setProperties]    = useState([])
-  const [activeIdx,     setActiveIdx]     = useState(0)
-  const [wordVisible,   setWordVisible]   = useState(true)
-  const [galleryImages, setGalleryImages] = useState(() => imagesForCategory(0))
-  const [galleryKey,    setGalleryKey]    = useState(0)
-  const [galleryLeaving,setGalleryLeaving]= useState(false)
+  const [properties, setProperties] = useState([])
   const collectionRef = useRef(null)
-  // Fetch properties
+
   useEffect(() => {
     supabase
       .from("properties")
       .select("id, name, location, hero_photo, idea_tags, landscape_tag, architect, year, price")
       .eq("published", true)
-      .then(({ data }) => {
-        if (data?.length) setProperties(data)
-      })
+      .then(({ data }) => { if (data?.length) setProperties(data) })
       .catch(() => {})
-  }, [])
-
-  // When activeIdx changes, update gallery images
-  useEffect(() => {
-    setGalleryImages(imagesForCategory(activeIdx))
-    setGalleryKey(k => k + 1)
-  }, [activeIdx])
-
-  // Cycle every 5s — pure functional updaters, no stale closures
-  useEffect(() => {
-    const t = setInterval(() => {
-      setWordVisible(false)
-      setGalleryLeaving(true)
-      setTimeout(() => {
-        setActiveIdx(i => (i + 1) % CATEGORIES.length)
-        setGalleryLeaving(false)
-        setWordVisible(true)
-      }, 700)
-    }, 5000)
-    return () => clearInterval(t)
   }, [])
 
   return (
@@ -137,23 +91,23 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:0.7;transform:translateY(5px)} }
-        @keyframes imgIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes imgOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
-        .nav-join { transition: border-color 0.2s, color 0.2s; }
-        .nav-join:hover { border-color: rgba(247,244,236,0.45) !important; color: rgba(247,244,236,0.9) !important; }
+        @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
       `}</style>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
       <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
 
-        {/* Gallery row */}
-        <div style={{ position: "absolute", bottom: "12%", left: 0, right: 0, zIndex: 0 }}>
-          <GalleryRow key={galleryKey} images={galleryImages} leaving={galleryLeaving} />
+        {/* Scrolling gallery */}
+        <div style={{
+          position: "absolute", bottom: "8%", left: 0, right: 0, zIndex: 0,
+          animation: "fadeIn 1.2s ease 0.6s both",
+        }}>
+          <ScrollingGallery images={GALLERY_IMAGES} />
         </div>
 
         {/* Gradient overlay */}
         <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          background: "linear-gradient(to bottom, #111110 0%, #111110 22%, rgba(17,17,16,0.45) 52%, rgba(17,17,16,0.2) 100%)" }} />
+          background: "linear-gradient(to bottom, #111110 0%, #111110 22%, rgba(17,17,16,0.45) 52%, rgba(17,17,16,0.15) 100%)" }} />
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
@@ -193,16 +147,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.2, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", textAlign: "center" }}>
-            <span style={{
-              display: "inline-block",
-              minWidth: "3.6em",
-              textAlign: "right",
-              transition: "opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1)",
-              opacity: wordVisible ? 1 : 0,
-              transform: wordVisible ? "translateY(0px)" : "translateY(-12px)",
-            }}>
-              {CATEGORIES[activeIdx].word}
-            </span>{" "}shaped by<br />
+            Homes shaped by<br />
             <span style={{ color: "rgba(247,244,236,0.5)", fontStyle: "italic" }}>Your taste</span>
           </h1>
 
@@ -229,7 +174,6 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
       <div ref={collectionRef} style={{ padding: "100px 48px 120px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
 
-          {/* Title */}
           <div style={{ marginBottom: 60 }}>
             <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.24em", color: "rgba(247,244,236,0.2)", textTransform: "uppercase", marginBottom: 16 }}>
               Selected for this season
@@ -239,7 +183,6 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             </h2>
           </div>
 
-          {/* Property grid */}
           {properties.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 14 }}>
               {properties.slice(0, Math.min(6, properties.length)).map((p, i) => (
