@@ -9,7 +9,9 @@ export default function ComingSoon() {
       justifyContent: "center",
       gap: 20,
     }}>
-      <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto" }} />
+      <a href="/home" style={{ display: "block", opacity: 1 }}>
+        <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto" }} />
+      </a>
       <p style={{
         fontFamily: "'DM Sans', sans-serif",
         fontSize: 11,
