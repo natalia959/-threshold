@@ -185,19 +185,10 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
-            <a href="/explore" style={{ textDecoration: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.14em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase", transition: "color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "rgba(247,244,236,0.8)"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.4)"}>
-              Explore Collections
-            </a>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          <div />
+          <div style={{ display: "flex", alignItems: "center" }}>
             <button className="nav-signin" onClick={onSignIn} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: 0 }}>
-              {user ? "My Portal" : "Sign In"}
-            </button>
-            <button className="nav-join" onClick={onSignUp} style={{ background: "none", border: "1px solid rgba(247,244,236,0.18)", borderRadius: 40, cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: "8px 20px" }}>
-              Join Reserved
+              Sign In
             </button>
           </div>
         </nav>
@@ -223,7 +214,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.5)"; e.currentTarget.style.color = "#F7F4EC" }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.22)"; e.currentTarget.style.color = "rgba(247,244,236,0.55)" }}
           >
-            Join the Waitlist
+            Join Reserved
           </button>
 
           {/* Search */}
