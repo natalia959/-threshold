@@ -205,7 +205,7 @@ export default function ExplorePage() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#131313", color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: "#0c0c0c", color: "#fff" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
@@ -220,7 +220,7 @@ export default function ExplorePage() {
         display: "grid", gridTemplateColumns: "auto 1fr auto",
         alignItems: "center", gap: 32,
         padding: "0 48px", height: 56,
-        background: "#131313", borderBottom: "1px solid rgba(255,255,255,0.08)",
+        background: "#0c0c0c", borderBottom: "1px solid rgba(255,255,255,0.08)",
       }}>
         {/* Left: logo + label */}
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>

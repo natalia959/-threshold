@@ -1,7 +1,7 @@
 export default function ComingSoon() {
   return (
     <div style={{
-      background: "#131313",
+      background: "#0c0c0c",
       height: "100vh",
       display: "flex",
       flexDirection: "column",
