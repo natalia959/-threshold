@@ -125,7 +125,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           <div style={{
             position: "fixed", top: 20, left: 0, right: 0, margin: "0 auto",
             zIndex: 100,
-            display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
             width: 480,
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
@@ -136,14 +136,16 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase" }}>
               Manifesto
             </span>
-            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 33, width: "auto" }} />
-            <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s", textAlign: "right", justifySelf: "end" }}
+            <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.color = "#F7F4EC"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.55)"}
             >
               Join Reserved
             </button>
           </div>
+
+          {/* Logo */}
+          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 30, width: "auto", marginBottom: 24, animation: "fadeUp 1s ease 0.25s both" }} />
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.2, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", textAlign: "center" }}>
