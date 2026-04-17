@@ -2,33 +2,43 @@
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "../lib/supabase"
 
-// ── Prompts with semantic property matching ────────────────────────────────
+// ── Categories — hardcoded images per word ────────────────────────────────
 
-const PROMPTS = [
-  { text: "Homes where light defines the space",        match: p => (p.idea_tags||[]).includes("Light as Material") || p.landscape_tag === "Coastal" },
-  { text: "Concrete houses in Los Angeles",             match: p => p.location?.toLowerCase().includes("los angeles") || p.location?.toLowerCase().includes("l.a.") },
-  { text: "Glass pavilions overlooking the city",       match: p => (p.idea_tags||[]).includes("Indoors Dissolved") || p.landscape_tag === "Urban" },
-  { text: "Homes designed for gathering",               match: p => (p.idea_tags||[]).includes("Gathering") },
-  { text: "Minimalist interiors with natural materials",match: p => (p.idea_tags||[]).includes("Solitude") },
-  { text: "Something with large gardens and privacy",   match: p => (p.idea_tags||[]).includes("Garden as Architecture") },
+const CATEGORIES = [
+  {
+    word: "Homes",
+    images: [
+      { url: "/homes-1.jpg" },
+      { url: "/homes-2.webp" },
+      { url: "/homes-3.jpg" },
+    ],
+  },
+  {
+    word: "Objects",
+    images: [
+      // Add your Objects images here
+    ],
+  },
+  {
+    word: "Living",
+    images: [
+      // Add your Living images here
+    ],
+  },
 ]
 
 const FALLBACK_COLORS = [
   "#1a2030","#182818","#282018","#1e1e2c","#201a28","#1a2818","#2c2018","#181e2c",
 ]
 
-function imagesForPrompt(properties, idx) {
-  if (!properties.length) return FALLBACK_COLORS.map(c => ({ color: c }))
-  const prompt = PROMPTS[idx]
-  const filtered = properties.filter(p => p.hero_photo && prompt.match(p))
-  const pool = filtered.length >= 4 ? filtered : properties.filter(p => p.hero_photo)
-  return pool.length ? pool.map(p => ({ url: p.hero_photo, name: p.name }))
-             : FALLBACK_COLORS.map(c => ({ color: c }))
+function imagesForCategory(categoryIdx) {
+  const imgs = CATEGORIES[categoryIdx].images
+  return imgs.length ? imgs : FALLBACK_COLORS.map(c => ({ color: c }))
 }
 
 // ── Gallery row ───────────────────────────────────────────────────────────
 
-function GalleryRow({ images }) {
+function GalleryRow({ images, leaving }) {
   const displayed = images.filter(img => img.url).slice(0, 7)
   return (
     <div style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "center", padding: "0 48px" }}>
@@ -37,8 +47,10 @@ function GalleryRow({ images }) {
           flexShrink: 0, width: 180, height: 200,
           borderRadius: 8, overflow: "hidden",
           background: "#1a1a18",
-          animation: "imgIn 0.9s cubic-bezier(0.16,1,0.3,1) both",
-          animationDelay: `${i * 55}ms`,
+          animation: leaving
+            ? `imgOut 0.35s ease both`
+            : `imgIn 0.7s cubic-bezier(0.16,1,0.3,1) both`,
+          animationDelay: leaving ? `${i * 30}ms` : `${i * 55}ms`,
         }}>
           <img src={img.url} alt={img.name || ""}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -79,14 +91,12 @@ function CollectionCard({ property, large }) {
 
 export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchValue, setSearchValue }) {
   const [properties,    setProperties]    = useState([])
-  const [promptIdx,     setPromptIdx]     = useState(0)
-  const [promptVisible, setPromptVisible] = useState(true)
-  const [galleryImages, setGalleryImages] = useState(FALLBACK_COLORS.map(c => ({ color: c })))
-  const [galleryOpacity,setGalleryOpacity]= useState(0)
+  const [activeIdx,     setActiveIdx]     = useState(0)
+  const [wordVisible,   setWordVisible]   = useState(true)
+  const [galleryImages, setGalleryImages] = useState(() => imagesForCategory(0))
   const [galleryKey,    setGalleryKey]    = useState(0)
-  const [focused,       setFocused]       = useState(false)
+  const [galleryLeaving,setGalleryLeaving]= useState(false)
   const collectionRef = useRef(null)
-
   // Fetch properties
   useEffect(() => {
     supabase
@@ -94,38 +104,30 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
       .select("id, name, location, hero_photo, idea_tags, landscape_tag, architect, year, price")
       .eq("published", true)
       .then(({ data }) => {
-        if (data?.length) {
-          setProperties(data)
-          const imgs = imagesForPrompt(data, 0)
-          setGalleryImages(imgs)
-          setGalleryKey(k => k + 1)
-        }
-        setGalleryOpacity(1)
+        if (data?.length) setProperties(data)
       })
-      .catch(() => setGalleryOpacity(1))
+      .catch(() => {})
   }, [])
 
-  // Rotate prompts + crossfade gallery
+  // When activeIdx changes, update gallery images
+  useEffect(() => {
+    setGalleryImages(imagesForCategory(activeIdx))
+    setGalleryKey(k => k + 1)
+  }, [activeIdx])
+
+  // Cycle every 3s — pure functional updaters, no stale closures
   useEffect(() => {
     const t = setInterval(() => {
-      setPromptVisible(false)
+      setWordVisible(false)
+      setGalleryLeaving(true)
       setTimeout(() => {
-        const next = (promptIdx + 1) % PROMPTS.length
-        setPromptIdx(next)
-        setPromptVisible(true)
-        // crossfade gallery
-        setGalleryOpacity(0)
-        setTimeout(() => {
-          setGalleryImages(imagesForPrompt(properties, next))
-          setGalleryKey(k => k + 1)
-          setGalleryOpacity(1)
-        }, 500)
-      }, 450)
-    }, 5500)
+        setActiveIdx(i => (i + 1) % CATEGORIES.length)
+        setGalleryLeaving(false)
+        setWordVisible(true)
+      }, 400)
+    }, 3000)
     return () => clearInterval(t)
-  }, [promptIdx, properties])
-
-  const submit = () => { if (searchValue.trim()) onSearch(searchValue.trim()) }
+  }, [])
 
   return (
     <div style={{ background: "#111110", color: "#F7F4EC", minHeight: "100vh", overflowX: "hidden" }}>
@@ -135,27 +137,17 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:0.7;transform:translateY(5px)} }
         @keyframes imgIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        .search-line { border-bottom: 1px solid rgba(247,244,236,0.18); transition: border-color 0.3s ease; }
-        .search-line:focus-within { border-color: rgba(247,244,236,0.5); }
-        .search-input { background:transparent; border:none; outline:none; width:100%; }
-        .search-input::placeholder { color: transparent; }
+        @keyframes imgOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
         .nav-join { transition: border-color 0.2s, color 0.2s; }
         .nav-join:hover { border-color: rgba(247,244,236,0.45) !important; color: rgba(247,244,236,0.9) !important; }
-        .nav-signin:hover { color: rgba(247,244,236,0.9) !important; }
       `}</style>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
       <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
 
         {/* Gallery row */}
-        <div style={{
-          position: "absolute", bottom: "12%", left: 0, right: 0,
-          opacity: galleryOpacity,
-          filter: galleryOpacity < 1 ? "blur(6px)" : "blur(0px)",
-          transition: "opacity 0.8s ease, filter 0.8s ease",
-          zIndex: 0,
-        }}>
-          <GalleryRow key={galleryKey} images={galleryImages} />
+        <div style={{ position: "absolute", bottom: "12%", left: 0, right: 0, zIndex: 0 }}>
+          <GalleryRow key={galleryKey} images={galleryImages} leaving={galleryLeaving} />
         </div>
 
         {/* Gradient overlay */}
@@ -167,25 +159,23 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           <div /><div />
         </nav>
 
-        {/* Hero content — fills upper 56% */}
+        {/* Hero content */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, height: "56vh",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           zIndex: 10, textAlign: "center", padding: "0 48px",
         }}>
 
-          {/* Pill bar — sticky */}
+          {/* Pill bar */}
           <div style={{
-            position: "fixed", top: 20, left: 0, right: 0,
-            margin: "0 auto",
+            position: "fixed", top: 20, left: 0, right: 0, margin: "0 auto",
             zIndex: 100,
             display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center",
             width: 480,
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
             WebkitBackdropFilter: "blur(20px) saturate(1.4)",
-            borderRadius: 8,
-            padding: "10px 20px",
+            borderRadius: 8, padding: "10px 20px",
             animation: "fadeUp 1s ease 0.1s both",
           }}>
             <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase" }}>
@@ -202,11 +192,18 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.2, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", textAlign: "center" }}>
-            Homes shaped by<br />
+            <span style={{
+              display: "inline-block",
+              transition: "opacity 0.35s ease, transform 0.35s ease",
+              opacity: wordVisible ? 1 : 0,
+              transform: wordVisible ? "translateY(0px)" : "translateY(-10px)",
+            }}>
+              {CATEGORIES[activeIdx].word}
+            </span>{" "}shaped by<br />
             <span style={{ color: "rgba(247,244,236,0.5)", fontStyle: "italic" }}>Your taste</span>
           </h1>
 
-          {/* Waitlist button */}
+          {/* Join button */}
           <button onClick={onSignUp} style={{ background: "none", border: "1px solid rgba(247,244,236,0.22)", borderRadius: 40, padding: "10px 28px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.08em", color: "rgba(247,244,236,0.55)", marginBottom: 48, animation: "fadeUp 1s ease 0.45s both", transition: "border-color 0.2s, color 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.5)"; e.currentTarget.style.color = "#F7F4EC" }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.22)"; e.currentTarget.style.color = "rgba(247,244,236,0.55)" }}
@@ -247,27 +244,13 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
               ))}
             </div>
           ) : (
-            // Skeleton while loading
             <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 14 }}>
               {[520, 320, 320].map((h, i) => (
-                <div key={i} style={{ height: h, borderRadius: 8, background: "#141414", animation: "pulse 2s ease-in-out infinite" }} />
+                <div key={i} style={{ height: h, borderRadius: 8, background: "#141414" }} />
               ))}
             </div>
           )}
 
-          {/* Explore CTA */}
-          {properties.length > 0 && (
-            <div style={{ marginTop: 56, textAlign: "center" }}>
-              <a
-                href="/explore"
-                style={{ display: "inline-block", background: "none", border: "1px solid rgba(247,244,236,0.15)", borderRadius: 40, padding: "13px 36px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.1em", color: "rgba(247,244,236,0.45)", textDecoration: "none", transition: "border-color 0.2s, color 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.4)"; e.currentTarget.style.color = "rgba(247,244,236,0.8)" }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.15)"; e.currentTarget.style.color = "rgba(247,244,236,0.45)" }}
-              >
-                Explore Collections
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </div>
