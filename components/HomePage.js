@@ -217,53 +217,6 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             Join Reserved
           </button>
 
-          {/* Search */}
-          <div style={{ width: "100%", maxWidth: 580, animation: "fadeUp 1s ease 0.6s both" }}>
-            <div className="search-line" style={{ display: "flex", alignItems: "center", position: "relative", paddingBottom: 2 }}>
-
-              {/* Rotating prompt */}
-              {!searchValue && (
-                <div style={{
-                  position: "absolute", left: 0, right: 40, pointerEvents: "none",
-                  fontFamily: "var(--font-cormorant), serif", fontStyle: "italic",
-                  fontSize: "clamp(18px, 1.6vw, 22px)", color: "rgba(247,244,236,0.28)",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                  opacity: promptVisible ? 1 : 0,
-                  transform: promptVisible ? "translateY(0)" : "translateY(-5px)",
-                  transition: "opacity 0.45s ease, transform 0.45s ease",
-                }}>
-                  {PROMPTS[promptIdx].text}
-                </div>
-              )}
-
-              <input
-                className="search-input"
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                onKeyDown={e => e.key === "Enter" && submit()}
-                style={{
-                  fontFamily: "var(--font-cormorant), serif", fontStyle: "italic",
-                  fontSize: "clamp(18px, 1.6vw, 22px)", color: "#F7F4EC",
-                  padding: "0 0 14px", letterSpacing: "0.01em",
-                }}
-              />
-
-              {/* Search icon / send */}
-              <button onClick={submit} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 0 14px", color: "rgba(247,244,236,0.3)", flexShrink: 0, display: "flex", alignItems: "center" }}>
-                {searchValue
-                  ? <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.5 14V3M3 8.5L8.5 3L14 8.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2"/><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                }
-              </button>
-            </div>
-
-            {/* Helper */}
-            <div style={{ marginTop: 16, fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.2)", textTransform: "uppercase", textAlign: "center" }}>
-              Describe what you're drawn to
-            </div>
-          </div>
         </div>
 
         {/* Scroll indicator */}
