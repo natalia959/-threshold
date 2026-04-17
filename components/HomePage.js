@@ -200,17 +200,17 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           zIndex: 10, textAlign: "center", padding: "0 48px",
         }}>
 
-          {/* Pill bar */}
+          {/* Pill bar — sticky */}
           <div style={{
+            position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)",
+            zIndex: 100,
             display: "flex", alignItems: "center", justifyContent: "space-between",
             width: "100%", maxWidth: 480,
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
             WebkitBackdropFilter: "blur(20px) saturate(1.4)",
             borderRadius: 40,
-            border: "1px solid rgba(255,255,255,0.1)",
             padding: "10px 20px",
-            marginBottom: 32,
             animation: "fadeUp 1s ease 0.1s both",
           }}>
             <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase" }}>
