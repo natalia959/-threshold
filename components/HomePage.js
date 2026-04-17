@@ -26,49 +26,24 @@ function imagesForPrompt(properties, idx) {
              : FALLBACK_COLORS.map(c => ({ color: c }))
 }
 
-// ── Gallery strip ──────────────────────────────────────────────────────────
+// ── Gallery row ───────────────────────────────────────────────────────────
 
-const HEIGHTS = [260, 220, 300, 240, 280, 200, 260, 240]
-
-function GalleryStrip({ images }) {
-  const trackRef = useRef(null)
-  const posRef   = useRef(0)
-  const rafRef   = useRef(null)
-  const CARD_W   = 300 + 10
-
-  useEffect(() => {
-    posRef.current = 0
-    const track = trackRef.current
-    if (!track || !images.length) return
-    const total = images.length * CARD_W
-    const tick = () => {
-      posRef.current -= 0.28
-      if (posRef.current <= -total) posRef.current = 0
-      if (track) track.style.transform = `translateX(${posRef.current}px)`
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [images])
-
-  const tiles = [...images, ...images, ...images]
-
+function GalleryRow({ images }) {
+  const displayed = images.filter(img => img.url).slice(0, 7)
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
-      <div ref={trackRef} style={{ display: "flex", gap: 10, alignItems: "flex-end", willChange: "transform" }}>
-        {tiles.map((img, i) => (
-          <div key={i} style={{
-            flexShrink: 0, width: 300, height: HEIGHTS[i % HEIGHTS.length],
-            borderRadius: 8, overflow: "hidden",
-            background: img.url ? "#111" : img.color || "#1a1a24",
-          }}>
-            {img.url && (
-              <img src={img.url} alt={img.name || ""}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            )}
-          </div>
-        ))}
-      </div>
+    <div style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "center", padding: "0 48px" }}>
+      {displayed.map((img, i) => (
+        <div key={i} style={{
+          flexShrink: 0, width: 180, height: 200,
+          borderRadius: 8, overflow: "hidden",
+          background: "#1a1a18",
+          animation: "imgIn 0.9s cubic-bezier(0.16,1,0.3,1) both",
+          animationDelay: `${i * 55}ms`,
+        }}>
+          <img src={img.url} alt={img.name || ""}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -159,6 +134,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:0.7;transform:translateY(5px)} }
+        @keyframes imgIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         .search-line { border-bottom: 1px solid rgba(247,244,236,0.18); transition: border-color 0.3s ease; }
         .search-line:focus-within { border-color: rgba(247,244,236,0.5); }
         .search-input { background:transparent; border:none; outline:none; width:100%; }
@@ -171,17 +147,20 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
       <div style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
 
-        {/* Gallery strip */}
+        {/* Gallery row */}
         <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: "44vh",
-          opacity: galleryOpacity, transition: "opacity 0.9s ease", zIndex: 0,
+          position: "absolute", bottom: "12%", left: 0, right: 0,
+          opacity: galleryOpacity,
+          filter: galleryOpacity < 1 ? "blur(6px)" : "blur(0px)",
+          transition: "opacity 0.8s ease, filter 0.8s ease",
+          zIndex: 0,
         }}>
-          <GalleryStrip key={galleryKey} images={galleryImages} />
+          <GalleryRow key={galleryKey} images={galleryImages} />
         </div>
 
-        {/* Gradient: dark at top, dissolves over gallery */}
+        {/* Gradient overlay */}
         <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          background: "linear-gradient(to bottom, #111110 0%, #111110 38%, rgba(17,17,16,0.88) 55%, rgba(17,17,16,0.5) 74%, rgba(17,17,16,0.1) 100%)" }} />
+          background: "linear-gradient(to bottom, #111110 0%, #111110 28%, rgba(17,17,16,0.6) 58%, rgba(17,17,16,0.85) 100%)" }} />
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
