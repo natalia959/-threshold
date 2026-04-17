@@ -200,7 +200,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             position: "fixed", top: 20, left: 0, right: 0,
             margin: "0 auto",
             zIndex: 100,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center",
             width: 480,
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
@@ -213,7 +213,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
               Manifesto
             </span>
             <img src="/threshold-logo.png" alt="Threshold" style={{ height: 33, width: "auto" }} />
-            <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
+            <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s", textAlign: "right", justifySelf: "end" }}
               onMouseEnter={e => e.currentTarget.style.color = "#F7F4EC"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.55)"}
             >
