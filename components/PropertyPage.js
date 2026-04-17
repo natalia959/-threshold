@@ -276,7 +276,7 @@ export default function PropertyPage({ property, allProperties = [], onBack, sea
   const related = (allProperties || []).filter(p => p.id !== property.id).slice(0, 3)
 
   return (
-    <div style={{ background: "#0c0c0c", color: "#fff", minHeight: "100vh" }}>
+    <div style={{ background: "#111110", color: "#fff", minHeight: "100vh" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }

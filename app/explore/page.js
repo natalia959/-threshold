@@ -205,7 +205,7 @@ export default function ExplorePage() {
   })
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0c0c0c", color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: "#111110", color: "#fff" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
@@ -220,7 +220,7 @@ export default function ExplorePage() {
         display: "grid", gridTemplateColumns: "auto 1fr auto",
         alignItems: "center", gap: 32,
         padding: "0 48px", height: 56,
-        background: "#0c0c0c", borderBottom: "1px solid rgba(255,255,255,0.08)",
+        background: "#111110", borderBottom: "1px solid rgba(255,255,255,0.08)",
       }}>
         {/* Left: logo + label */}
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
@@ -257,7 +257,7 @@ export default function ExplorePage() {
 
         {/* Right: sign in */}
         <Link href="/" style={{ textDecoration: "none" }}>
-          <button style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "8px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
+          <button style={{ background: "#fff", color: "#111110", border: "none", borderRadius: 40, padding: "8px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
             Sign In
           </button>
         </Link>

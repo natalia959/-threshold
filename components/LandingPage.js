@@ -32,7 +32,7 @@ export default function LandingPage({ onSearch }) {
   const handleSubmit = () => { if (value.trim()) onSearch(value.trim()) }
 
   return (
-    <div style={{ background: "#0c0c0c", height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 40px", color: "#fff" }}>
+    <div style={{ background: "#111110", height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 40px", color: "#fff" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { display: none; }

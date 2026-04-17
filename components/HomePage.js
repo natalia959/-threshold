@@ -153,7 +153,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
   const submit = () => { if (searchValue.trim()) onSearch(searchValue.trim()) }
 
   return (
-    <div style={{ background: "#0c0c0c", color: "#F7F4EC", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: "#111110", color: "#F7F4EC", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
@@ -181,7 +181,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
         {/* Gradient: dark at top, dissolves over gallery */}
         <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          background: "linear-gradient(to bottom, #0c0c0c 0%, #0c0c0c 38%, rgba(12,12,12,0.88) 55%, rgba(12,12,12,0.5) 74%, rgba(12,12,12,0.1) 100%)" }} />
+          background: "linear-gradient(to bottom, #111110 0%, #111110 38%, rgba(17,17,16,0.88) 55%, rgba(17,17,16,0.5) 74%, rgba(17,17,16,0.1) 100%)" }} />
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>

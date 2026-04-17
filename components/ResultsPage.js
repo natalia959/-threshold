@@ -231,7 +231,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
   const headline = query ? query.charAt(0).toUpperCase() + query.slice(1) : ""
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0c0c0c", color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: "#111110", color: "#fff" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
@@ -269,7 +269,7 @@ export default function ResultsPage({ query, results, searching, onSearch, onBac
           )}
         </div>
         <div style={{ textAlign: "right" }}>
-          <button onClick={user ? () => window.location.href = "/dashboard" : onSignIn} style={{ background: "#fff", color: "#0c0c0c", border: "none", borderRadius: 40, padding: "8px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+          <button onClick={user ? () => window.location.href = "/dashboard" : onSignIn} style={{ background: "#fff", color: "#111110", border: "none", borderRadius: 40, padding: "8px 22px", fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
             {user ? "My Portal" : "Sign In"}
           </button>
         </div>
