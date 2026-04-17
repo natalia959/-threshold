@@ -153,7 +153,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
         {/* Gradient overlay */}
         <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          background: "linear-gradient(to bottom, #111110 0%, #111110 28%, rgba(17,17,16,0.6) 58%, rgba(17,17,16,0.85) 100%)" }} />
+          background: "linear-gradient(to bottom, #111110 0%, #111110 22%, rgba(17,17,16,0.45) 52%, rgba(17,17,16,0.2) 100%)" }} />
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
@@ -195,9 +195,11 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.2, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", textAlign: "center" }}>
             <span style={{
               display: "inline-block",
-              transition: "opacity 0.35s ease, transform 0.35s ease",
+              minWidth: "3.6em",
+              textAlign: "right",
+              transition: "opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)",
               opacity: wordVisible ? 1 : 0,
-              transform: wordVisible ? "translateY(0px)" : "translateY(-10px)",
+              transform: wordVisible ? "translateY(0px)" : "translateY(-12px)",
             }}>
               {CATEGORIES[activeIdx].word}
             </span>{" "}shaped by<br />
