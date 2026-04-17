@@ -49,9 +49,9 @@ function GalleryRow({ images, leaving }) {
           borderRadius: 8, overflow: "hidden",
           background: "#1a1a18",
           animation: leaving
-            ? `imgOut 0.35s ease both`
-            : `imgIn 0.7s cubic-bezier(0.16,1,0.3,1) both`,
-          animationDelay: leaving ? `${i * 30}ms` : `${i * 55}ms`,
+            ? `imgOut 0.6s cubic-bezier(0.4,0,0.2,1) both`
+            : `imgIn 1.1s cubic-bezier(0.4,0,0.2,1) both`,
+          animationDelay: leaving ? `${i * 40}ms` : `${i * 70}ms`,
         }}>
           <img src={img.url} alt={img.name || ""}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -116,7 +116,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
     setGalleryKey(k => k + 1)
   }, [activeIdx])
 
-  // Cycle every 3s — pure functional updaters, no stale closures
+  // Cycle every 5s — pure functional updaters, no stale closures
   useEffect(() => {
     const t = setInterval(() => {
       setWordVisible(false)
@@ -125,8 +125,8 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         setActiveIdx(i => (i + 1) % CATEGORIES.length)
         setGalleryLeaving(false)
         setWordVisible(true)
-      }, 400)
-    }, 3000)
+      }, 700)
+    }, 5000)
     return () => clearInterval(t)
   }, [])
 
@@ -197,7 +197,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
               display: "inline-block",
               minWidth: "3.6em",
               textAlign: "right",
-              transition: "opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+              transition: "opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1)",
               opacity: wordVisible ? 1 : 0,
               transform: wordVisible ? "translateY(0px)" : "translateY(-12px)",
             }}>
