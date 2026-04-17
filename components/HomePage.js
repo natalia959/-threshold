@@ -213,7 +213,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           <img src="/threshold-logo.png" alt="Threshold" style={{ height: 35, width: "auto", display: "block", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }} />
 
           {/* Headline */}
-          <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 20px", animation: "fadeUp 1s ease 0.3s both", whiteSpace: "nowrap" }}>
+          <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", whiteSpace: "nowrap" }}>
             Homes shaped by your taste.
           </h1>
 
