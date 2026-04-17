@@ -186,7 +186,6 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
-            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto", display: "block" }} />
             <a href="/explore" style={{ textDecoration: "none", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 11, letterSpacing: "0.14em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase", transition: "color 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.color = "rgba(247,244,236,0.8)"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.4)"}>
@@ -211,7 +210,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
         }}>
 
           {/* Logo */}
-          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto", display: "block", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }} />
+          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 35, width: "auto", display: "block", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }} />
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 20px", animation: "fadeUp 1s ease 0.3s both", whiteSpace: "nowrap" }}>
