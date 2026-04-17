@@ -15,7 +15,7 @@ function ScrollingGallery({ images }) {
     <div style={{ overflow: "hidden", width: "100%" }}>
       <div style={{
         display: "flex", gap: 16,
-        animation: `marquee ${images.length * 6}s linear infinite`,
+        animation: `marquee ${images.length * 7.5}s linear infinite`,
         width: "max-content",
       }}>
         {items.map((img, i) => (
