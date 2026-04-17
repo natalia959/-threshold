@@ -217,7 +217,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(42px, 5.2vw, 72px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 20px", animation: "fadeUp 1s ease 0.3s both", maxWidth: 720 }}>
-            Private Entrance to<br />Architectural Living
+Homes shaped by your taste.
           </h1>
 
           {/* Subline */}
