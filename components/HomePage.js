@@ -210,10 +210,8 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           zIndex: 10, textAlign: "center", padding: "0 48px",
         }}>
 
-          {/* Eyebrow */}
-          <div style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.28em", color: "rgba(247,244,236,0.25)", textTransform: "uppercase", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }}>
-            By invitation
-          </div>
+          {/* Logo */}
+          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 44, width: "auto", display: "block", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }} />
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.07, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 20px", animation: "fadeUp 1s ease 0.3s both", whiteSpace: "nowrap" }}>
