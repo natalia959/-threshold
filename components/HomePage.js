@@ -217,10 +217,13 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             Homes shaped by your taste.
           </h1>
 
-          {/* Subline */}
-          <p style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 13, color: "rgba(247,244,236,0.36)", letterSpacing: "0.04em", margin: "0 0 48px", animation: "fadeUp 1s ease 0.45s both", lineHeight: 1.8 }}>
-            A curated collection of architecturally significant homes.
-          </p>
+          {/* Waitlist button */}
+          <button onClick={onSignUp} style={{ background: "none", border: "1px solid rgba(247,244,236,0.22)", borderRadius: 40, padding: "10px 28px", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.08em", color: "rgba(247,244,236,0.55)", marginBottom: 48, animation: "fadeUp 1s ease 0.45s both", transition: "border-color 0.2s, color 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.5)"; e.currentTarget.style.color = "#F7F4EC" }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(247,244,236,0.22)"; e.currentTarget.style.color = "rgba(247,244,236,0.55)" }}
+          >
+            Join the Waitlist
+          </button>
 
           {/* Search */}
           <div style={{ width: "100%", maxWidth: 580, animation: "fadeUp 1s ease 0.6s both" }}>
