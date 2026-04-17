@@ -11,6 +11,7 @@ const CATEGORIES = [
       { url: "/homes-1.jpg" },
       { url: "/homes-2.webp" },
       { url: "/homes-3.jpg" },
+      { url: "/homes-4.jpg" },
     ],
   },
   {
