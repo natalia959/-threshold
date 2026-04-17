@@ -210,7 +210,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
             WebkitBackdropFilter: "blur(20px) saturate(1.4)",
-            borderRadius: 40,
+            borderRadius: 8,
             padding: "10px 20px",
             animation: "fadeUp 1s ease 0.1s both",
           }}>
