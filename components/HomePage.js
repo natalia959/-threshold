@@ -200,8 +200,30 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
           zIndex: 10, textAlign: "center", padding: "0 48px",
         }}>
 
-          {/* Logo */}
-          <img src="/threshold-logo.png" alt="Threshold" style={{ height: 35, width: "auto", display: "block", marginBottom: 28, animation: "fadeUp 1s ease 0.15s both" }} />
+          {/* Pill bar */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", maxWidth: 480,
+            background: "rgba(255,255,255,0.07)",
+            backdropFilter: "blur(20px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(20px) saturate(1.4)",
+            borderRadius: 40,
+            border: "1px solid rgba(255,255,255,0.1)",
+            padding: "10px 20px",
+            marginBottom: 32,
+            animation: "fadeUp 1s ease 0.1s both",
+          }}>
+            <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase" }}>
+              Manifesto
+            </span>
+            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 22, width: "auto" }} />
+            <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#F7F4EC"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.55)"}
+            >
+              Join Reserved
+            </button>
+          </div>
 
           {/* Headline */}
           <h1 style={{ fontFamily: "var(--font-cormorant), serif", fontSize: "clamp(34px, 4.2vw, 58px)", fontWeight: 300, lineHeight: 1.2, letterSpacing: "-0.01em", color: "#F7F4EC", margin: "0 0 28px", animation: "fadeUp 1s ease 0.3s both", textAlign: "center" }}>
