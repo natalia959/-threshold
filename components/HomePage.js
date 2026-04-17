@@ -202,10 +202,11 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
           {/* Pill bar — sticky */}
           <div style={{
-            position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)",
+            position: "fixed", top: 20, left: 0, right: 0,
+            margin: "0 auto",
             zIndex: 100,
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            width: "100%", maxWidth: 480,
+            width: 480,
             background: "rgba(255,255,255,0.07)",
             backdropFilter: "blur(20px) saturate(1.4)",
             WebkitBackdropFilter: "blur(20px) saturate(1.4)",
