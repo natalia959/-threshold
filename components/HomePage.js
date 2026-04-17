@@ -185,12 +185,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
 
         {/* Nav */}
         <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 48px" }}>
-          <div />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <button className="nav-signin" onClick={onSignIn} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 12, letterSpacing: "0.05em", color: "rgba(247,244,236,0.45)", padding: 0 }}>
-              Sign In
-            </button>
-          </div>
+          <div /><div />
         </nav>
 
         {/* Hero content — fills upper 56% */}
@@ -217,7 +212,7 @@ export default function HomePage({ onSearch, onSignUp, onSignIn, user, searchVal
             <span style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(247,244,236,0.4)", textTransform: "uppercase" }}>
               Manifesto
             </span>
-            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 22, width: "auto" }} />
+            <img src="/threshold-logo.png" alt="Threshold" style={{ height: 33, width: "auto" }} />
             <button onClick={onSignUp} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans), sans-serif", fontSize: 9, letterSpacing: "0.16em", color: "rgba(247,244,236,0.55)", textTransform: "uppercase", padding: 0, transition: "color 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.color = "#F7F4EC"}
               onMouseLeave={e => e.currentTarget.style.color = "rgba(247,244,236,0.55)"}
