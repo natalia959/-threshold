@@ -1,5 +1,6 @@
 import { Cormorant_Garamond, EB_Garamond, DM_Sans, Encode_Sans_Expanded } from "next/font/google"
 import "./globals.css"
+import SmoothScroll from "../components/SmoothScroll"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -35,7 +36,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${ebGaramond.variable} ${dmSans.variable} ${encodeSansExpanded.variable}`}>
-      <body style={{ margin: 0, padding: 0 }}>{children}</body>
+      <body style={{ margin: 0, padding: 0 }}><SmoothScroll>{children}</SmoothScroll></body>
     </html>
   )
 }
